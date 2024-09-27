@@ -1,0 +1,93 @@
+workflow:
+  rules:
+    - if: $CI_COMMIT_MESSAGE =~ /See merge request/
+    - if: $CI_PIPELINE_SOURCE == 'schedule'
+    - when: never
+
+stages:
+  - init
+  - build
+
+image: alpine
+
+before_script:
+  - apk add xorriso git
+  - export PKR_VAR_vcenter_username="$vcenter_username"
+  - export PKR_VAR_vcenter_password="$vcenter_password"
+  - export PKR_VAR_admin_password="$admin_password"
+  - export PKR_VAR_build_username="$build_username"
+  - export PKR_VAR_build_password="$build_password"
+  - export PKR_VAR_build_password_encrypted="$build_password_encrypted"
+  - export PKR_VAR_rhsm_user="$rhsm_user"
+  - export PKR_VAR_rhsm_pass="$rhsm_pass"
+  - export PKR_VAR_vcenter_server="$vcenter_server"
+  - export PKR_VAR_vcenter_datacenter="$vcenter_datacenter"
+  - export PKR_VAR_vcenter_cluster="$vcenter_cluster"
+  - export PKR_VAR_vcenter_folder="$vcenter_folder"
+  - export PKR_VAR_vcenter_datastore="$vcenter_datastore"
+  - export PKR_VAR_vcenter_network="$vcenter_network"
+  - export PKR_VAR_vcenter_iso_datastore="$vcenter_iso_datastore"
+  - export PKR_VAR_vcenter_content_library="$vcenter_content_library"
+  - export PKR_VAR_root_pem_files="$root_pem_files"
+  - export PKR_VAR_issuing_pem_files="$issuing_pem_files"
+
+get_packer:
+  stage: init
+  artifacts:
+    paths:
+    - packer
+  script:
+    - echo "Fetching packer"
+    - wget https://releases.hashicorp.com/packer/1.11.2/packer_1.11.2_linux_amd64.zip
+    - unzip packer_1.11.2_linux_amd64.zip
+    - chmod +x packer
+  rules:
+    - if: $CI_COMMIT_REF_NAME == 'main'
+
+scheduled_packer_build:
+  stage: build
+  script:
+    - echo "Scheduled build of $BUILD, proceeding.";
+    - ./packer init $BUILD;
+    - ./packer build -var-file=vsphere/vsphere.pkrvars.hcl $BUILD
+  parallel:
+    matrix:
+      - BUILD:
+          - vsphere/linux/centos8
+          - vsphere/linux/centos9
+          - vsphere/linux/photon4
+          - vsphere/linux/photon5
+          - vsphere/linux/rhel8
+          - vsphere/linux/rhel9
+          - vsphere/linux/ubuntu2404
+          - vsphere/windows/win2019
+          - vsphere/windows/win2022
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'schedule' && $CI_COMMIT_REF_NAME == 'main'
+
+merge_packer_build:
+  stage: build
+  script:
+    - |-
+        if (git diff --name-only $CI_COMMIT_SHA~ $CI_COMMIT_SHA | grep -q "^$BUILD/"); then
+          echo "Changes detected in $BUILD, proceeding with build.";
+          ./packer init $BUILD;
+          ./packer build -var-file=vsphere/vsphere.pkrvars.hcl $BUILD
+        else
+          echo "No changes in $BUILD, skipping build.";
+          exit 0;
+        fi
+  parallel:
+    matrix:
+      - BUILD:
+          - vsphere/linux/centos8
+          - vsphere/linux/centos9
+          - vsphere/linux/photon4
+          - vsphere/linux/photon5
+          - vsphere/linux/rhel8
+          - vsphere/linux/rhel9
+          - vsphere/linux/ubuntu2404
+          - vsphere/windows/win2019
+          - vsphere/windows/win2022
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'push' && $CI_COMMIT_REF_NAME == 'main'

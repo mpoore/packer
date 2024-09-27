@@ -363,14 +363,14 @@ variable "inline_cmds" {
     default     = []
 }
 variable "root_pem_files" {
-    type        = list(string)
-    description = "List of absolute URLs to root PEM certificates"
-    default     = []
+    type        = string
+    description = "Comma separated list of absolute URLs to root PEM certificates"
+    default     = ""
 }
 variable "issuing_pem_files" {
-    type        = list(string)
-    description = "List of absolute URLs to issuing PEM certificates"
-    default     = []
+    type        = string
+    description = "Comma separated list of absolute URLs to issuing PEM certificates"
+    default     = ""
 }
 
 # -------------------------------------------------------------------------- #
@@ -381,11 +381,6 @@ variable "build_repo" {
     type        = string
     description = "Source control respository this build comes from"
     default     = "https://github.com/mpoore/packer"
-}
-variable "build_branch" {
-    type        = string
-    description = "Branch of the source control respository this build comes from"
-    default     = "main"
 }
 variable "build_pkiserver" {
     type        = string

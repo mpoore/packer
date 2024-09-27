@@ -132,8 +132,8 @@ build {
                                 "BUILDREPO=${ var.build_repo }",
                                 "RHSM_USER=${ var.rhsm_user }",
                                 "RHSM_PASS=${ var.rhsm_pass }",
-                                "ROOTPEMFILES=${ join(",",var.root_pem_files) }",
-                                "ISSUINGPEMFILES=${ join(",",var.issuing_pem_files) }",
+                                "ROOTPEMFILES=${ var.root_pem_files }",
+                                "ISSUINGPEMFILES=${ var.issuing_pem_files }",
                                 "OS_VERSION=${ var.meta_os_version }" ]
     }
 

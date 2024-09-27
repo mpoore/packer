@@ -220,8 +220,8 @@ build {
                                 "ANSIBLEKEY=${ var.build_configmgmt_key }",
                                 "BUILDUSER=${ var.build_username }",
                                 "BUILDPASS=${ var.build_password }",
-                                "ROOTPEMFILES=${ join(",",var.root_pem_files) }",
-                                "ISSUINGPEMFILES=${ join(",",var.issuing_pem_files) }" ]
+                                "ROOTPEMFILES=${ var.root_pem_files }",
+                                "ISSUINGPEMFILES=${ var.issuing_pem_files }" ]
     }
 
     # PowerShell Provisioner to execute commands

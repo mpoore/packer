@@ -368,14 +368,14 @@ variable "inline_cmds" {
     default     = []
 }
 variable "root_pem_files" {
-    type        = list(string)
-    description = "List of absolute URLs to root PEM certificates"
-    default     = []
+    type        = string
+    description = "Comma separated list of absolute URLs to root PEM certificates"
+    default     = ""
 }
 variable "issuing_pem_files" {
-    type        = list(string)
-    description = "List of absolute URLs to issuing PEM certificates"
-    default     = []
+    type        = string
+    description = "Comma separated list of absolute URLs to issuing PEM certificates"
+    default     = ""
 }
 
 # -------------------------------------------------------------------------- #

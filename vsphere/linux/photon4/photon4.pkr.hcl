@@ -122,8 +122,8 @@ build {
         environment_vars    = [ "PKISERVER=${ var.build_pkiserver }",
                                 "BUILDVERSION=${ local.build_version }",
                                 "BUILDREPO=${ var.build_repo }",
-                                "ROOTPEMFILES=${ join(",",var.root_pem_files) }",
-                                "ISSUINGPEMFILES=${ join(",",var.issuing_pem_files) }" ]
+                                "ROOTPEMFILES=${ var.root_pem_files }",
+                                "ISSUINGPEMFILES=${ var.issuing_pem_files }" ]
     }
 
     post-processor "manifest" {

@@ -38,6 +38,9 @@ build_guestos_type              = "centos9_64Guest"
 build_guestos_language          = "en_GB"
 build_guestos_keyboard          = "gb"
 build_guestos_timezone          = "UTC"
+build_additional_packages       = [ "curl", "git",
+                                    "net-tools", "ntp", "ntpdate",
+                                    "unzip", "vim", "wget" ]
 
 # Provisioner Settings
 script_files                    = [ "scripts/linux/common/updates-dnf.sh",

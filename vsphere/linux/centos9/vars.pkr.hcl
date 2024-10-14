@@ -307,6 +307,11 @@ variable "build_guestos_systemlocale" {
     description = "The language that the guest OS will be configured with"
     default     = "en-US"
 }
+variable "build_additional_packages" {
+    type        = list(string)
+    description = "Additional OS packages to be installed"
+    default     = []
+}
 
 # -------------------------------------------------------------------------- #
 # 7. OS Meta Data

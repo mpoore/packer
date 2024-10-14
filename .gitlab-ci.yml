@@ -4,14 +4,16 @@ workflow:
     - if: $CI_PIPELINE_SOURCE == 'schedule'
     - when: never
 
+variables:
+  FF_TIMESTAMPS: true
+
 stages:
   - init
   - build
 
-image: alpine
+image: mpoore/packer-ci:latest
 
 before_script:
-  - apk add xorriso git
   - export PKR_VAR_vcenter_username="$vcenter_username"
   - export PKR_VAR_vcenter_password="$vcenter_password"
   - export PKR_VAR_admin_password="$admin_password"
@@ -30,19 +32,6 @@ before_script:
   - export PKR_VAR_vcenter_content_library="$vcenter_content_library"
   - export PKR_VAR_root_pem_files="$root_pem_files"
   - export PKR_VAR_issuing_pem_files="$issuing_pem_files"
-
-get_packer:
-  stage: init
-  artifacts:
-    paths:
-    - packer
-  script:
-    - echo "Fetching packer"
-    - wget https://releases.hashicorp.com/packer/1.11.2/packer_1.11.2_linux_amd64.zip
-    - unzip packer_1.11.2_linux_amd64.zip
-    - chmod +x packer
-  rules:
-    - if: $CI_COMMIT_REF_NAME == 'main'
 
 scheduled_packer_build:
   stage: build

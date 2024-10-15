@@ -32,7 +32,7 @@ locals {
                                         build_guestos_language    = var.build_guestos_language
                                         build_guestos_keyboard    = var.build_guestos_keyboard
                                         build_guestos_timezone    = var.build_guestos_timezone
-                                        build_additional_packages = join(" ", var.build_additional_packages)
+                                        build_guestos_packages    = join(" ", var.build_guestos_packages)
                                     })
                                   }
     vm_description              = "VER: ${ local.build_version }\nISO: ${ var.os_iso_file }"

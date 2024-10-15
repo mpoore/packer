@@ -97,8 +97,8 @@ dnf makecache
 dnf install epel-release -y
 dnf makecache
 dnf install -y sudo open-vm-tools perl
-%{ if build_additional_packages != "" ~}
-dnf install -y ${build_additional_packages}
+%{ if build_guestos_packages != "" ~}
+dnf install -y ${build_guestos_packages}
 %{ endif ~}
 echo "${build_username} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/${build_username}
 sed -i "s/^.*requiretty/#Defaults requiretty/" /etc/sudoers

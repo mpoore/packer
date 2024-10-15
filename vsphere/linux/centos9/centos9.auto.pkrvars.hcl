@@ -38,8 +38,7 @@ build_guestos_type              = "centos9_64Guest"
 build_guestos_language          = "en_GB"
 build_guestos_keyboard          = "gb"
 build_guestos_timezone          = "UTC"
-build_guestos_packages          = [ "curl", "git",
-                                    "net-tools", "ntp", "ntpdate",
+build_guestos_packages          = [ "curl", "git", "net-tools",
                                     "unzip", "vim", "wget" ]
 
 # Provisioner Settings

@@ -1,0 +1,6 @@
+# General
+.DS_Store
+
+# Packer files
+manifests/*.txt
+vsphere/vsphere.pkrvars.hcl

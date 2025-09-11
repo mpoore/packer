@@ -186,6 +186,16 @@ variable "vm_mem_hotadd" {
     description = "Enable Memory hot-add"
     default     = false
 }
+variable "vm_video_ram" {
+    type        = number
+    description = "The size of video RAM in KB"
+    default     = 8192
+}
+variable "vm_usb_controller" {
+    type        = list(string)
+    description = "The USB controllers to attach to the VM"
+    default     = []
+}
 variable "vm_cdrom_type" {
     type        = string
     description = "Type of CD-ROM drive to add to the VM (e.g. 'sata' or 'ide')"
@@ -310,6 +320,11 @@ variable "build_guestos_systemlocale" {
 variable "build_guestos_packages" {
     type        = list(string)
     description = "Packages to be installed during the guest OS build"
+    default     = []
+}
+variable "build_guestos_snaps" {
+    type        = list(string)
+    description = "Snaps to be installed by a provisioner script"
     default     = []
 }
 

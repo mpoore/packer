@@ -337,6 +337,11 @@ variable "meta_os_version" {
     description = "The major version of the OS (e.g. '7', '8.5', '2022')"
     default     = "9"
 }
+variable "meta_os_subversion" {
+    type        = string
+    description = "Sub-version, or patch level (e.g. 'U2')"
+    default     = ""
+}
 
 # -------------------------------------------------------------------------- #
 # 8. Build Timeout Settings
@@ -366,6 +371,21 @@ variable "inline_cmds" {
     type        = list(string)
     description = "List of OS commands to execute"
     default     = []
+}
+variable "state_files" {
+    type        = list(string)
+    description = "List of Salt States to apply"
+    default     = []
+}
+variable "state_tree" {
+    type        = string
+    description = "A directory containing an entire Salt State Tree (including top.sls)"
+    default     = ""
+}
+variable "pillar_tree" {
+    type        = string
+    description = "A directory containing an entire Salt Pillar Tree"
+    default     = ""
 }
 variable "root_pem_files" {
     type        = string

@@ -67,17 +67,18 @@ clearpart --all --initlabel
 
 ### Modify partition sizes for the virtual machine hardware.
 ### Create primary system partitions.
-part /boot --fstype xfs --size=1024 --label=BOOTFS
-part /boot/efi --fstype vfat --size=1024 --label=EFIFS
+part /boot --fstype ext4 --size=1024 --label=BOOT
+part /boot/efi --fstype vfat --size=1024 --label=EFI
 part pv.01 --size=100 --grow
 
 ### Create a logical volume management (LVM) group.
-volgroup sysvg --pesize=4096 pv.01
+volgroup vg0 pv.01
 
 ### Modify logical volume sizes for the virtual machine hardware.
 ### Create logical volumes.
-logvol swap --fstype swap --name=lv_swap --vgname=sysvg --size=8192 --label=SWAPFS
-logvol / --fstype xfs --name=lv_root --vgname=sysvg --percent=100 --label=ROOTFS
+logvol swap --fstype swap --name=swap --vgname=vg0 --size=8192 --label=SWAP
+logvol /var --fstype xfs --name=var --vgname=vg0 --size=8192 --label=VAR
+logvol / --fstype ext4 --name=root --vgname=vg0 --percent=100 --label=ROOT
 
 ### Modifies the default set of services that will run under the default runlevel.
 services --enabled=NetworkManager,sshd
@@ -97,6 +98,8 @@ dnf makecache
 dnf install epel-release -y
 dnf makecache
 dnf install -y sudo open-vm-tools perl
+curl -fsSL https://github.com/saltstack/salt-install-guide/releases/latest/download/salt.repo | tee /etc/yum.repos.d/salt.repo
+dnf clean expire-cache
 %{ if build_guestos_packages != "" ~}
 dnf install -y ${build_guestos_packages}
 %{ endif ~}

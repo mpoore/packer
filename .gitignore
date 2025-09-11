@@ -3,4 +3,5 @@
 
 # Packer files
 manifests/*.txt
+logs/*.log
 vsphere/vsphere.pkrvars.hcl

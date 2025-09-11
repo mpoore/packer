@@ -6,7 +6,7 @@
 # ----------------------------------------------------------------------------
 
 # ISO Settings
-os_iso_file                     = "ubuntu-24.04.1-desktop-amd64.iso"
+os_iso_file                     = "ubuntu-mate-24.04.1-desktop-amd64.iso"
 os_iso_path                     = "os/ubuntu/24"
 
 # OS Meta Data
@@ -16,11 +16,13 @@ meta_os_vendor                  = "Ubuntu"
 meta_os_version                 = "24.04.1 LTS"
 
 # VM Hardware Settings
-vm_hardware_version             = 20
+vm_hardware_version             = 21
 vm_firmware                     = "efi"
 vm_cpu_sockets                  = 2
 vm_cpu_cores                    = 1
-vm_mem_size                     = 4096
+vm_mem_size                     = 8192
+vm_video_ram                    = 262144
+vm_usb_controller               = ["usb"]
 vm_nic_type                     = "vmxnet3"
 vm_disk_controller              = ["pvscsi"]
 vm_disk_size                    = 131072
@@ -35,11 +37,22 @@ vcenter_content_library_destroy = true
 
 # VM OS Settings
 build_guestos_type              = "ubuntu64Guest"
-build_guestos_language          = "en_GB"
+build_guestos_language          = "en_US.UTF-8"
 build_guestos_keyboard          = "gb"
-build_guestos_timezone          = "UTC"
-build_guestos_packages          = []
+build_guestos_timezone          = "Europe/London"
+build_guestos_packages          = [ "ansible","git","gpg" ]
+build_guestos_snaps             = [ "bitwarden","code","k9s","postman" ]
+
+# Timeout settings
+build_ip_timeout                = "60m"
 
 # Provisioner Settings
-script_files                    = [ "scripts/linux/common/updates-apt.sh" ]
+script_files                    = [ "scripts/linux/ubuntu/updates-apt.sh",
+                                    "scripts/linux/ubuntu/hashicorp-repo.sh",
+                                    "scripts/linux/ubuntu/install-packer.sh",
+                                    "scripts/linux/ubuntu/install-terraform.sh",
+                                    "scripts/linux/ubuntu/install-vault.sh",
+                                    "scripts/linux/ubuntu/install-snaps.sh",
+                                    "scripts/linux/ubuntu/install-chrome.sh",
+                                    "scripts/linux/ubuntu/power-settings.sh" ]
 inline_cmds                     = []

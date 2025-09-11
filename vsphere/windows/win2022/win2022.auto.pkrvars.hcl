@@ -14,9 +14,10 @@ meta_os_family                  = "Windows"
 meta_os_type                    = "Server"
 meta_os_vendor                  = "Microsoft"
 meta_os_version                 = "2022"
+meta_os_subversion              = "Std"
 
 # VM Hardware Settings
-vm_hardware_version             = 20
+vm_hardware_version             = 21
 vm_firmware                     = "efi"
 vm_cpu_sockets                  = 2
 vm_cpu_cores                    = 1

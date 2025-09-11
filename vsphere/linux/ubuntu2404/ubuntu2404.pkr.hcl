@@ -9,11 +9,15 @@
 #                           Packer Configuration                             #
 # -------------------------------------------------------------------------- #
 packer {
-    required_version = ">= 1.11.2"
+    required_version = ">= 1.14.0"
     required_plugins {
         vsphere = {
+            version = ">= 1.4.2"
             source  = "github.com/hashicorp/vsphere"
-            version = ">= 1.4.0"
+        }
+        salt = {
+            version = ">= 0.5.0"
+            source  = "github.com/mpoore/salt"
         }
     }
 }
@@ -22,7 +26,7 @@ packer {
 #                              Local Variables                               #
 # -------------------------------------------------------------------------- #
 locals { 
-    build_version               = formatdate("YY.MM (DD.hhmm)", timestamp())
+    build_version               = formatdate("YY.MM", timestamp())
     build_date                  = formatdate("YYYY-MM-DD hh:mm ZZZ", timestamp())
     data_source_content         = {
                                     "/meta-data" = file("${abspath(path.root)}/data/meta-data")
@@ -32,10 +36,9 @@ locals {
                                         build_guestos_language    = var.build_guestos_language
                                         build_guestos_keyboard    = var.build_guestos_keyboard
                                         build_guestos_timezone    = var.build_guestos_timezone
-                                        build_guestos_packages    = var.build_guestos_packages
                                     })
                                   }
-    vm_description              = "VER: ${ local.build_version }\nISO: ${ var.os_iso_file }"
+    vm_description              = "OS: ${ var.meta_os_vendor } ${ var.meta_os_family } ${ var.meta_os_version }\nVER: ${ local.build_version }\nDATE: ${ local.build_date }\nISO: ${ var.os_iso_file }"
 }
 
 # -------------------------------------------------------------------------- #
@@ -120,21 +123,12 @@ source "vsphere-iso" "ubuntu2404" {
 build {
     # Build sources
     sources                 = [ "source.vsphere-iso.ubuntu2404" ]
-    
-    # Shell Provisioner to execute scripts
-    provisioner "shell" {
-        execute_command     = "echo '${ var.build_password }' | {{.Vars}} sudo -E -S sh -eu '{{.Path}}'"
-        scripts             = var.script_files
-        environment_vars    = [ "PKISERVER=${ var.build_pkiserver }",
-                                "CONFIGMGMTUSER=${ var.build_configmgmt_user }",
-                                "CONFIGMGMTKEY=${ var.build_configmgmt_key }",
-                                "BUILDVERSION=${ local.build_version }",
-                                "BUILDREPO=${ var.build_repo }",
-                                "RHSM_USER=${ var.rhsm_user }",
-                                "RHSM_PASS=${ var.rhsm_pass }",
-                                "ROOTPEMFILES=${ var.root_pem_files }",
-                                "ISSUINGPEMFILES=${ var.issuing_pem_files }",
-                                "OS_VERSION=${ var.meta_os_version }" ]
+
+    # Salt State provisioning
+    provisioner "salt" {
+        state_tree          = var.state_tree
+        pillar_tree         = var.pillar_tree
+        environment_vars    = [ "BUILDVERSION=${ local.build_version }" ]
     }
 
     post-processor "manifest" {

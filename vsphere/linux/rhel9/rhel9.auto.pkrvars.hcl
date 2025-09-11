@@ -6,17 +6,17 @@
 # ----------------------------------------------------------------------------
 
 # ISO Settings
-os_iso_file                     = "rhel-9.2-x86_64-dvd.iso"
+os_iso_file                     = "rhel-9.6-x86_64-dvd.iso"
 os_iso_path                     = "os/redhat/9"
 
 # OS Meta Data
 meta_os_family                  = "Linux"
 meta_os_type                    = "Server"
 meta_os_vendor                  = "RHEL"
-meta_os_version                 = "9.2"
+meta_os_version                 = "9.6"
 
 # VM Hardware Settings
-vm_hardware_version             = 20
+vm_hardware_version             = 21
 vm_firmware                     = "efi"
 vm_cpu_sockets                  = 1
 vm_cpu_cores                    = 1
@@ -38,15 +38,8 @@ build_guestos_type              = "rhel9_64Guest"
 build_guestos_language          = "en_GB"
 build_guestos_keyboard          = "gb"
 build_guestos_timezone          = "UTC"
+build_guestos_packages          = [ "salt-minion" ]
 
 # Provisioner Settings
-script_files                    = [ "scripts/linux/rhel/rhsm-add.sh",
-                                    "scripts/linux/common/updates-dnf.sh",
-                                    "scripts/linux/common/sshd.sh",
-                                    "scripts/linux/rhel/pki.sh",
-                                    "scripts/linux/rhel/hashicorp.sh",
-                                    "scripts/linux/rhel/salt-minion.sh",
-                                    "scripts/linux/common/motd.sh",
-                                    "scripts/linux/rhel/rhsm-remove.sh",
-                                    "scripts/linux/rhel/cleanup.sh" ]
-inline_cmds                     = []
+state_tree                      = "salt/states"
+pillar_tree                     = "salt/pillars"

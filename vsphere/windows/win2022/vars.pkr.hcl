@@ -332,6 +332,11 @@ variable "meta_os_version" {
     description = "The major version of the OS (e.g. '7', '8.5', '2022')"
     default     = "9"
 }
+variable "meta_os_subversion" {
+    type        = string
+    description = "Sub-version, or patch level (e.g. 'U2')"
+    default     = ""
+}
 
 # -------------------------------------------------------------------------- #
 # 8. Build Timeout Settings

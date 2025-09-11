@@ -16,7 +16,7 @@ meta_os_vendor                  = "Photon"
 meta_os_version                 = "5.0"
 
 # VM Hardware Settings
-vm_hardware_version             = 20
+vm_hardware_version             = 21
 vm_firmware                     = "efi"
 vm_cpu_sockets                  = 1
 vm_cpu_cores                    = 1
@@ -40,9 +40,5 @@ build_guestos_keyboard          = ""
 build_guestos_timezone          = ""
 
 # Provisioner Settings
-script_files                    = [ "scripts/linux/common/updates-tdnf.sh",
-                                    "scripts/linux/common/sshd.sh",
-                                    "scripts/linux/photon/pki.sh",
-                                    "scripts/linux/common/motd.sh",
-                                    "scripts/linux/photon/cleanup.sh" ]
-inline_cmds                     = []
+state_tree                      = "salt/states"
+pillar_tree                     = "salt/pillars"

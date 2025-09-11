@@ -9,14 +9,14 @@
 #                           Packer Configuration                             #
 # -------------------------------------------------------------------------- #
 packer {
-    required_version = ">= 1.11.2"
+    required_version = ">= 1.13.1"
     required_plugins {
         vsphere = {
-            version = ">= v1.4.0"
+            version = ">= v1.4.2"
             source  = "github.com/hashicorp/vsphere"
         }
         windows-update = {
-            version = ">= 0.16.8"
+            version = ">= 0.16.10"
             source  = "github.com/rgl/windows-update"
         }
     }
@@ -26,8 +26,7 @@ packer {
 #                              Local Variables                               #
 # -------------------------------------------------------------------------- #
 locals { 
-    build_version               = formatdate("YY.MM (DD.hhmm)", timestamp())
-    build_date                  = formatdate("YYYY-MM-DD hh:mm ZZZ", timestamp())
+    build_version               = formatdate("YY.MM.DD-hhmm", timestamp())
     core_floppy_content         = {
                                     "Autounattend.xml" = templatefile("${abspath(path.root)}/cfg/Autounattend.pkrtpl.hcl", {
                                         admin_password              = var.admin_password
@@ -52,7 +51,9 @@ locals {
                                         build_windows_image         = "SERVERSTANDARD"
                                     })
                                   }
-    vm_description              = "VER: ${ local.build_version }\nISO: ${ var.os_iso_file }"
+    os_version                  = "${ var.meta_os_version }-${ var.meta_os_subversion }"
+    vm_description              = "OS: ${ var.meta_os_vendor } ${ var.meta_os_family } ${ local.os_version }\nVER: ${ local.build_version }\nISO: ${ var.os_iso_file }"
+    vm_name                     = "win-${ lower(local.os_version) }"
 }
 
 # -------------------------------------------------------------------------- #
@@ -77,7 +78,7 @@ source "vsphere-iso" "win2022stddexp" {
         for_each = var.vcenter_content_library != null ? [1] : []
             content {
                 library         = var.vcenter_content_library
-                name            = "${ source.name }"
+                name            = local.vm_name
                 description     = local.vm_description
                 ovf             = var.vcenter_content_library_ovf
                 destroy         = var.vcenter_content_library_destroy
@@ -87,7 +88,7 @@ source "vsphere-iso" "win2022stddexp" {
 
     # Virtual Machine
     guest_os_type               = var.build_guestos_type
-    vm_name                     = "${ source.name }"
+    vm_name                     = local.vm_name
     notes                       = local.vm_description
     firmware                    = var.vm_firmware
     CPUs                        = var.vm_cpu_sockets
@@ -143,7 +144,7 @@ source "vsphere-iso" "win2022stdcore" {
         for_each = var.vcenter_content_library != null ? [1] : []
             content {
                 library         = var.vcenter_content_library
-                name            = "${ source.name }"
+                name            = "${ local.vm_name }-core"
                 description     = local.vm_description
                 ovf             = var.vcenter_content_library_ovf
                 destroy         = var.vcenter_content_library_destroy
@@ -153,7 +154,7 @@ source "vsphere-iso" "win2022stdcore" {
 
     # Virtual Machine
     guest_os_type               = var.build_guestos_type
-    vm_name                     = "${ source.name }"
+    vm_name                     = "${ local.vm_name }-core"
     notes                       = local.vm_description
     firmware                    = var.vm_firmware
     CPUs                        = var.vm_cpu_sockets
@@ -229,18 +230,5 @@ build {
         elevated_user       = var.admin_username
         elevated_password   = var.admin_password
         inline              = var.inline_cmds
-    }
-
-    post-processor "manifest" {
-        output              = "manifests/vsphere-${source.name}.txt"
-        strip_path          = true
-        custom_data         = {
-            vcenter_fqdn    = var.vcenter_server
-            vcenter_folder  = var.vcenter_folder
-            iso_file        = var.os_iso_file
-            build_repo      = var.build_repo
-            build_version   = local.build_version
-            build_date      = local.build_date
-        }
     }
 }

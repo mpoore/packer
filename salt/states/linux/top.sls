@@ -8,18 +8,18 @@
 base:
   'kernel:Linux':
     - match: grain
-    - linux/certificates
-    - linux/updates
-    - linux/packages
-    - linux/disable_ipv6
-    - linux/hardening
-    - linux/motd
-    - linux/ntp
-    - linux/issue
-    - linux/cloud-init
-    - linux/cleanup
+    - certificates
+    - packages
+    - disable_ipv6
+    - hardening
+    - motd
+    - ntp
+    - issue
+    - cloud-init
+    - salt-minion
+    - cleanup
 
   'os:RedHat':
     - match: grain
-    - linux/rhsm/rhel_register
-    - linux/rhsm/rhel_unregister
+    - rhel/rhel_register
+    - rhel/rhel_unregister

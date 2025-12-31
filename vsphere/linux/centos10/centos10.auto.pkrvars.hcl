@@ -23,7 +23,7 @@ vm_cpu_cores                    = 1
 vm_mem_size                     = 2048
 vm_nic_type                     = "vmxnet3"
 vm_disk_controller              = ["pvscsi"]
-vm_disk_size                    = 32768
+vm_disk_size                    = 65536
 vm_disk_thin                    = true
 vm_cdrom_type                   = "sata"
 
@@ -38,8 +38,8 @@ build_guestos_type              = "other5xLinux64Guest"
 build_guestos_language          = "en_GB"
 build_guestos_keyboard          = "gb"
 build_guestos_timezone          = "UTC"
-build_guestos_packages          = [ "salt-minion" ]
+build_guestos_packages          = [ "openssl", "salt-minion" ]
 
 # Provisioner Settings
-state_tree                      = "salt/states"
-pillar_tree                     = "salt/pillars"
+state_tree                      = "salt/states/linux"
+pillar_tree                     = "salt/pillars/linux"

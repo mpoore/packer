@@ -85,7 +85,7 @@
                     <InstallFrom>
                         <MetaData wcm:action="add">
                             <Key>/IMAGE/NAME</Key>
-                            <Value>Windows Server 2022 ${build_windows_image}</Value>
+                            <Value>Windows Server 2025 ${build_windows_image}</Value>
                         </MetaData>
                     </InstallFrom>
                     <InstallTo>
@@ -100,7 +100,7 @@
 			    <AcceptEula>true</AcceptEula>
                 <ProductKey>
                     <WillShowUI>OnError</WillShowUI>
-                    <Key>VDYBN-27WPP-V4HQT-9VMD4-VMK7H</Key>
+                    <Key>TVRH6-WHNXV-R9WG3-9XRFY-MY832</Key>
                 </ProductKey>
                 <FullName>mpoore</FullName>
                 <Organization>mpoore</Organization>
@@ -145,23 +145,19 @@
                     <Order>1</Order>
                     <Description>Set Execution Policy 64 Bit</Description>
                     <CommandLine>%SystemRoot%\system32\WindowsPowerShell\v1.0\powershell.exe -Command "Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Force"</CommandLine>
-                    <RequiresUserInput>true</RequiresUserInput>
+                    <RequiresUserInput>false</RequiresUserInput>
                 </SynchronousCommand>
                 <SynchronousCommand wcm:action="add">
                     <Order>2</Order>
                     <Description>Set Execution Policy 32 Bit</Description>
                     <CommandLine>%SystemRoot%\system32\WindowsPowerShell\v1.0\powershell.exe -Command "Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Force"</CommandLine>
-                    <RequiresUserInput>true</RequiresUserInput>
+                    <RequiresUserInput>false</RequiresUserInput>
                 </SynchronousCommand>
                 <SynchronousCommand wcm:action="add">
-                    <CommandLine>cmd.exe /c e:\setup.exe /s /v "/qb REBOOT=R"</CommandLine>
-                    <Order>3</Order>
-                    <Description>Install VMware Tools</Description>
-                </SynchronousCommand>
-                <SynchronousCommand wcm:action="add">
-                    <CommandLine>%SystemRoot%\system32\WindowsPowerShell\v1.0\powershell.exe -File a:\initialise.ps1</CommandLine>
+                    <CommandLine>%SystemRoot%\system32\WindowsPowerShell\v1.0\powershell.exe -File F:\setup.ps1</CommandLine>
                     <Description>Basic configuration</Description>
-                    <Order>4</Order>
+                    <Order>3</Order>
+                    <RequiresUserInput>false</RequiresUserInput>
                 </SynchronousCommand>
             </FirstLogonCommands>
             <OOBE>
@@ -193,5 +189,5 @@
             </UserAccounts>
         </component>
     </settings>
-    <cpi:offlineImage cpi:source="wim:c:/wims/install.wim#Windows Server 2022 ${build_windows_image}" xmlns:cpi="urn:schemas-microsoft-com:cpi" />
+    <cpi:offlineImage cpi:source="wim:c:/wims/install.wim#Windows Server 2025 ${build_windows_image}" xmlns:cpi="urn:schemas-microsoft-com:cpi" />
 </unattend>

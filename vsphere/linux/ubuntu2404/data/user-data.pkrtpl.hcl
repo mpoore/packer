@@ -88,7 +88,7 @@ autoinstall:
         id: lv-var
         name: var
         volgroup: vg0
-        size: 8G
+        size: 24G
       - type: format
         fstype: xfs
         volume: lv-var
@@ -108,7 +108,7 @@ autoinstall:
       - type: mount
         path: /
         device: lv-root
-        
+
   identity:
     hostname: ubuntu2404
     username: ${build_username}

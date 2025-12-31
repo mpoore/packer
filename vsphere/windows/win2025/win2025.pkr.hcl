@@ -1,6 +1,6 @@
 # ----------------------------------------------------------------------------
 # Name:         win2022.pkr.hcl
-# Description:  Build definition for Windows 2022
+# Description:  Build definition for Windows 2025
 # Author:       Michael Poore (@mpoore)
 # URL:          https://github.com/mpoore/packer
 # ----------------------------------------------------------------------------
@@ -15,10 +15,6 @@ packer {
             version = ">= 1.4.2"
             source  = "github.com/hashicorp/vsphere"
         }
-        windows-update = {
-            version = ">= 0.16.10"
-            source  = "github.com/rgl/windows-update"
-        }
     }
 }
 
@@ -28,7 +24,7 @@ packer {
 locals { 
     build_version               = formatdate("YY.MM", timestamp())
     build_date                  = formatdate("YYYY-MM-DD hh:mm ZZZ", timestamp())
-    core_floppy_content         = {
+    core_autounattend           = {
                                     "Autounattend.xml" = templatefile("${abspath(path.root)}/cfg/Autounattend.pkrtpl.hcl", {
                                         admin_password              = var.admin_password
                                         build_username              = var.build_username
@@ -40,7 +36,7 @@ locals {
                                         build_windows_image         = "SERVERSTANDARDCORE"
                                     })
                                   }
-    dexp_floppy_content         = {
+    dexp_autounattend           = {
                                     "Autounattend.xml" = templatefile("${abspath(path.root)}/cfg/Autounattend.pkrtpl.hcl", {
                                         admin_password              = var.admin_password
                                         build_username              = var.build_username
@@ -58,7 +54,7 @@ locals {
 # -------------------------------------------------------------------------- #
 #                       Template Source Definitions                          #
 # -------------------------------------------------------------------------- #
-source "vsphere-iso" "win2022stddexp" {
+source "vsphere-iso" "win2025stddexp" {
     # vCenter
     vcenter_server              = var.vcenter_server
     username                    = var.vcenter_username
@@ -109,8 +105,8 @@ source "vsphere-iso" "win2022stddexp" {
 
     # Removeable Media
     iso_paths                   = [ "[${ var.vcenter_iso_datastore }] ${ var.os_iso_path }/${ var.os_iso_file }", "[] /vmimages/tools-isoimages/windows.iso" ]
-    floppy_files                = [ "scripts/windows/common/initialise.ps1" ]
-    floppy_content              = local.dexp_floppy_content
+    cd_files                    = [ "scripts/windows/" ]
+    cd_content                  = local.dexp_autounattend
 
     # Boot and Provisioner
     boot_order                  = var.vm_boot_order
@@ -124,7 +120,7 @@ source "vsphere-iso" "win2022stddexp" {
     shutdown_timeout            = var.build_shutdown_timeout
 }
 
-source "vsphere-iso" "win2022stdcore" {
+source "vsphere-iso" "win2025stdcore" {
     # vCenter
     vcenter_server              = var.vcenter_server
     username                    = var.vcenter_username
@@ -175,8 +171,8 @@ source "vsphere-iso" "win2022stdcore" {
 
     # Removeable Media
     iso_paths                   = [ "[${ var.vcenter_iso_datastore }] ${ var.os_iso_path }/${ var.os_iso_file }", "[] /vmimages/tools-isoimages/windows.iso" ]
-    floppy_files                = [ "scripts/windows/common/initialise.ps1" ]
-    floppy_content              = local.core_floppy_content
+    cd_files                    = [ "scripts/windows/" ]
+    cd_content                  = local.core_autounattend
 
     # Boot and Provisioner
     boot_order                  = var.vm_boot_order
@@ -195,21 +191,16 @@ source "vsphere-iso" "win2022stdcore" {
 # -------------------------------------------------------------------------- #
 build {
     # Build sources
-    sources                 = [ "source.vsphere-iso.win2022stddexp",
-                                "source.vsphere-iso.win2022stdcore" ]
+    sources                 = [ "source.vsphere-iso.win2025stddexp",
+                                "source.vsphere-iso.win2025stdcore" ]
     
-    # Windows Update using https://github.com/rgl/packer-provisioner-windows-update
-    provisioner "windows-update" {
-        pause_before        = "30s"
-        search_criteria     = "IsInstalled=0"
-        filters             = [ "exclude:$_.Title -like '*VMware*'",
-                                "exclude:$_.Title -like '*Preview*'",
-                                "exclude:$_.Title -like '*Defender*'",
-                                "exclude:$_.InstallationBehavior.CanRequestUserInput",
-                                "include:$true" ]
-        restart_timeout     = "120m"
-    }      
-    
+    # Salt State provisioning
+    provisioner "salt" {
+        state_tree          = var.state_tree
+        pillar_tree         = var.pillar_tree
+        environment_vars    = [ "BUILDVERSION=${ local.build_version }" ]
+    }
+
     post-processor "manifest" {
         output              = "manifests/vsphere-${source.name}.txt"
         strip_path          = true

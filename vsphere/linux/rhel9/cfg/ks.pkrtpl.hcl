@@ -8,7 +8,7 @@
 ### Installs from the first attached CD-ROM/DVD on the system.
 cdrom
 
-### Performs the kickstart installation in text mode. 
+### Performs the kickstart installation in text mode.
 ### By default, kickstart installations are performed in graphical mode.
 text
 
@@ -59,7 +59,7 @@ bootloader --location=mbr --append="rhgb quiet crashkernel=auto"
 ### Initialize any invalid partition tables found on disks.
 zerombr
 
-### Removes partitions from the system, prior to creation of new partitions. 
+### Removes partitions from the system, prior to creation of new partitions.
 ### By default, no partitions are removed.
 ### --linux	erases all Linux partitions.
 ### --initlabel Initializes a disk (or disks) by creating a default disk label for all disks in their respective architecture.
@@ -77,7 +77,7 @@ volgroup vg0 pv.01
 ### Modify logical volume sizes for the virtual machine hardware.
 ### Create logical volumes.
 logvol swap --fstype swap --name=swap --vgname=vg0 --size=8192 --label=SWAP
-logvol /var --fstype xfs --name=var --vgname=vg0 --size=8192 --label=VAR
+logvol /var --fstype xfs --name=var --vgname=vg0 --size=24576 --label=VAR
 logvol / --fstype ext4 --name=root --vgname=vg0 --percent=100 --label=ROOT
 
 ### Modifies the default set of services that will run under the default runlevel.

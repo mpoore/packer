@@ -14,7 +14,7 @@ configure_chrony:
 
   file.managed:
     - name: {{ chrony_conf_file }}
-    - source: salt://linux/ntp/chrony.conf.j2
+    - source: salt://ntp/chrony.conf.j2
     - template: jinja
     - replace: True
 

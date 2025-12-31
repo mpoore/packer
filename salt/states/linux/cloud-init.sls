@@ -26,7 +26,7 @@ cloud-init:
         disable_vmware_customization: false
         datasource:
           VMware:
-            vmware_cust_file_max_wait: 20
+            vmware_cust_file_max_wait: 15
     - user: root
     - group: root
     - mode: 644
@@ -41,8 +41,8 @@ cloud-init:
 enable_ssh_pwauth:
   file.replace:
     - name: /etc/cloud/cloud.cfg
-    - pattern: '^ssh_pwauth\s*:\s*0'
-    - repl: 'ssh_pwauth:   1'
+    - pattern: '^ssh_pwauth:.*$'
+    - repl: 'ssh_pwauth: true'
     - backup: false
     - require:
       - pkg: cloud-init

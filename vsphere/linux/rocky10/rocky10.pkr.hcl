@@ -9,14 +9,14 @@
 #                           Packer Configuration                             #
 # -------------------------------------------------------------------------- #
 packer {
-    required_version = ">= 1.14.0"
+    required_version = ">= 1.14.3"
     required_plugins {
         vsphere = {
-            version = ">= 1.4.2"
+            version = ">= 2.0.0"
             source  = "github.com/hashicorp/vsphere"
         }
         salt = {
-            version = ">= 0.5.0"
+            version = ">= 0.5.6"
             source  = "github.com/mpoore/salt"
         }
     }
@@ -25,7 +25,7 @@ packer {
 # -------------------------------------------------------------------------- #
 #                              Local Variables                               #
 # -------------------------------------------------------------------------- #
-locals { 
+locals {
     build_version               = formatdate("YY.MM", timestamp())
     build_date                  = formatdate("YYYY-MM-DD hh:mm ZZZ", timestamp())
     ks_content                  = {

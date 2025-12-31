@@ -29,7 +29,7 @@
         },
         {
             "mountpoint": "/var",
-            "size": 8192,
+            "size": 24576,
             "filesystem": "xfs",
             "lvm": {
                 "vg_name": "vg0",
@@ -72,10 +72,10 @@
         "sed -i 's/PermitRootLogin no/PermitRootLogin yes/g' /etc/ssh/sshd_config",
         "systemctl restart sshd.service",
         "curl -fsSL https://github.com/saltstack/salt-install-guide/releases/latest/download/salt.repo | tee /etc/yum.repos.d/salt.repo",
-        "tdnf install -y salt-minion"
+        "tdnf install -y salt-minion openssl"
     ],
     "linux_flavor": "linux",
     "network": {
         "type": "dhcp"
-    }    
+    }
 }

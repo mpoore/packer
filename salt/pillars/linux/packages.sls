@@ -11,6 +11,9 @@ packages:
     - net-tools
     - vim-enhanced
     - wget
+    - telnet
+    - dbus-tools
+    - openssl
 
   Rocky:
     - curl
@@ -24,12 +27,13 @@ packages:
     - git
     - net-tools
     - vim-enhanced
-    - wget  
+    - wget
 
   Ubuntu:
     - curl
     - git
     - net-tools
+    - openssl
     - vim
     - wget
 

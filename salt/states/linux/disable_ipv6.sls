@@ -22,7 +22,7 @@ Disable IPv6 in RHEL:
     - text:
       - GRUB_CMDLINE_LINUX="$GRUB_CMDLINE_LINUX ipv6.disable=1"
   cmd.run:
-    - name: grub2-mkconfig -o /boot/grub2/grub.cfg --update-bls-cmdline
+    - name: grub2-mkconfig -o /boot/grub2/grub.cfg
 
 {% elif os == 'VMware Photon OS' %}
 Disable IPv6 on Photon OS:

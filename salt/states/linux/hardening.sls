@@ -6,12 +6,12 @@
 # ----------------------------------------------------------------------------
 {% set os = grains['os'] %}
 {% set hardening_map = {
-    'RedHat': 'linux.hardening.redhat',
-    'CentOS Stream': 'linux.hardening.redhat',
-    'Rocky': 'linux.hardening.redhat',
-    'Ubuntu': 'linux.hardening.ubuntu',
-    'VMware Photon OS': 'linux.hardening.photon'
+    'RedHat': 'hardening.redhat',
+    'CentOS Stream': 'hardening.redhat',
+    'Rocky': 'hardening.redhat',
+    'Ubuntu': 'hardening.ubuntu',
+    'VMware Photon OS': 'hardening.photon'
 } %}
 
 include:
-  - {{ hardening_map.get(os, 'linux.hardening.default') }}
+  - {{ hardening_map.get(os, 'hardening.default') }}

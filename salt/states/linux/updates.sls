@@ -22,12 +22,17 @@ dnf_clean_cache:
     - name: dnf clean all
     - order: 1
 
+dnf_lock_version:
+  cmd.run:
+    - name: dnf -y -q
+    - order: 2
+
 update_packages:
   cmd.run:
     - name: dnf update -y -q
     - env:
         HOME: /root
-    - order: 2
+    - order: 3
 {% endif %}
 
 # For Photon OS systems

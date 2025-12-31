@@ -13,12 +13,12 @@ firewalld:
     - name: firewalld
     - enable: True
 
-# Ensure SELinux is enforcing
-selinux-enforcing:
+# Ensure SELinux is permissive
+selinux-permissive:
   file.managed:
     - name: /etc/selinux/config
     - contents: |
-        SELINUX=enforcing
+        SELINUX=permissive
     - mode: '0644'
 
 # Password Complexity & Aging

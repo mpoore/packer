@@ -1,13 +1,11 @@
 # ----------------------------------------------------------------------------
-# Name:         salt/pillars/top.sls
+# Name:         salt/states/top.sls
 # Description:  Salt top file for Packer provisioning
 # Author:       Michael Poore (@mpoore / @mpoore.io)
 # URL:          https://github.com/mpoore/packer
 # ----------------------------------------------------------------------------
 
 base:
-  '*':
-    - linux/certificates
-    - linux/issue
-    - linux/ntp
-    - linux/packages
+  'kernel:Windows':
+    - match: grain
+    - hibernation

@@ -41,5 +41,5 @@ build_guestos_timezone          = "UTC"
 build_guestos_packages          = [ "salt-minion" ]
 
 # Provisioner Settings
-state_tree                      = "salt/states"
-pillar_tree                     = "salt/pillars"
+state_tree                      = "salt/states/linux"
+pillar_tree                     = "salt/pillars/linux"

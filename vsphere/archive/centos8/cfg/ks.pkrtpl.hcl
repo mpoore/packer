@@ -27,7 +27,6 @@ keyboard ${build_guestos_keyboard}
 ### --bootproto	  method to obtain networking configuration for device (default dhcp)
 ### --noipv6	  disable IPv6 on this device
 ###
-### network  --bootproto=static --ip=172.16.11.200 --netmask=255.255.255.0 --gateway=172.16.11.200 --nameserver=172.16.11.4 --hostname centos-linux-8
 network --bootproto=dhcp
 
 ### Lock the root account.
@@ -90,16 +89,6 @@ skipx
 %packages --ignoremissing --excludedocs
 @core
 -iwl*firmware
-sudo
-net-tools
-ntp
-ntpdate
-vim
-wget
-curl
-perl
-git
-unzip
 %end
 
 ### Post-installation commands.
@@ -107,7 +96,12 @@ unzip
 dnf makecache
 dnf install epel-release -y
 dnf makecache
-dnf install -y sudo open-vm-tools
+dnf install -y sudo open-vm-tools perl
+curl -fsSL https://github.com/saltstack/salt-install-guide/releases/latest/download/salt.repo | tee /etc/yum.repos.d/salt.repo
+dnf clean expire-cache
+%{ if build_guestos_packages != "" ~}
+dnf install -y ${build_guestos_packages}
+%{ endif ~}
 echo "${build_username} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/${build_username}
 sed -i "s/^.*requiretty/#Defaults requiretty/" /etc/sudoers
 %end

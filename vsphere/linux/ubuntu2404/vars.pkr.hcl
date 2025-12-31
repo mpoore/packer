@@ -309,7 +309,7 @@ variable "build_guestos_systemlocale" {
 }
 variable "build_guestos_packages" {
     type        = list(string)
-    description = "Packages to be installed during the guest OS build"
+    description = "Additional OS packages to be installed"
     default     = []
 }
 
@@ -336,6 +336,11 @@ variable "meta_os_version" {
     type        = string
     description = "The major version of the OS (e.g. '7', '8.5', '2022')"
     default     = "9"
+}
+variable "meta_os_subversion" {
+    type        = string
+    description = "Sub-version, or patch level (e.g. 'U2')"
+    default     = ""
 }
 
 # -------------------------------------------------------------------------- #
@@ -366,6 +371,21 @@ variable "inline_cmds" {
     type        = list(string)
     description = "List of OS commands to execute"
     default     = []
+}
+variable "state_files" {
+    type        = list(string)
+    description = "List of Salt States to apply"
+    default     = []
+}
+variable "state_tree" {
+    type        = string
+    description = "A directory containing an entire Salt State Tree (including top.sls)"
+    default     = ""
+}
+variable "pillar_tree" {
+    type        = string
+    description = "A directory containing an entire Salt Pillar Tree"
+    default     = ""
 }
 variable "root_pem_files" {
     type        = string

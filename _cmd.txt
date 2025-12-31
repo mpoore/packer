@@ -1,1 +1,14 @@
-packer build -var-file=vsphere/vsphere.pkrvars.hcl vsphere/linux/rhel9
+Detailed Logging
+================
+
+PACKER_LOG=1 PACKER_LOG_PATH="logs/centos10.ans" packer build -var-file=vsphere/vsphere.pkrvars.hcl vsphere/linux/centos10
+
+Light Logging
+=============
+
+packer build -color=false -timestamp-ui -var-file=vsphere/vsphere.pkrvars.hcl vsphere/linux/centos10 | tee logs/centos10.log
+
+Console Messages Only
+=====================
+
+packer build -var-file=vsphere/vsphere.pkrvars.hcl vsphere/linux/centos10

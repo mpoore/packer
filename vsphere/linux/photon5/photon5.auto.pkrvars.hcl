@@ -16,14 +16,14 @@ meta_os_vendor                  = "Photon"
 meta_os_version                 = "5.0"
 
 # VM Hardware Settings
-vm_hardware_version             = 20
+vm_hardware_version             = 21
 vm_firmware                     = "efi"
 vm_cpu_sockets                  = 1
 vm_cpu_cores                    = 1
 vm_mem_size                     = 2048
 vm_nic_type                     = "vmxnet3"
 vm_disk_controller              = ["pvscsi"]
-vm_disk_size                    = 32768
+vm_disk_size                    = 65536
 vm_disk_thin                    = true
 vm_cdrom_type                   = "sata"
 
@@ -40,9 +40,5 @@ build_guestos_keyboard          = ""
 build_guestos_timezone          = ""
 
 # Provisioner Settings
-script_files                    = [ "scripts/linux/common/updates-tdnf.sh",
-                                    "scripts/linux/common/sshd.sh",
-                                    "scripts/linux/photon/pki.sh",
-                                    "scripts/linux/common/motd.sh",
-                                    "scripts/linux/photon/cleanup.sh" ]
-inline_cmds                     = []
+state_tree                      = "salt/states/linux"
+pillar_tree                     = "salt/pillars/linux"

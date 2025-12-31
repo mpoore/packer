@@ -78,6 +78,8 @@ source "vsphere-iso" "ubuntu2404desktop" {
     CPU_hot_plug                = var.vm_cpu_hotadd
     RAM                         = var.vm_mem_size
     RAM_hot_plug                = var.vm_mem_hotadd
+    video_ram                   = var.vm_video_ram
+    usb_controller              = var.vm_usb_controller
     cdrom_type                  = var.vm_cdrom_type
     remove_cdrom                = var.vm_cdrom_remove
     disk_controller_type        = var.vm_disk_controller
@@ -105,6 +107,7 @@ source "vsphere-iso" "ubuntu2404desktop" {
                                     "<enter><wait>",
                                     "boot",
                                     "<enter>" ]
+    #boot_command = ["<wait><enter>"]
     ip_wait_timeout             = var.build_ip_timeout
     communicator                = "ssh"
     ssh_username                = var.build_username
@@ -123,18 +126,15 @@ build {
     
     # Shell Provisioner to execute scripts
     provisioner "shell" {
-        execute_command     = "echo '${ var.build_password }' | {{.Vars}} sudo -E -S sh -eu '{{.Path}}'"
+        execute_command     = "echo '${ var.build_password }' | {{.Vars}} sudo -E -S bash -eu '{{.Path}}'"
         scripts             = var.script_files
         environment_vars    = [ "PKISERVER=${ var.build_pkiserver }",
-                                "CONFIGMGMTUSER=${ var.build_configmgmt_user }",
-                                "CONFIGMGMTKEY=${ var.build_configmgmt_key }",
                                 "BUILDVERSION=${ local.build_version }",
                                 "BUILDREPO=${ var.build_repo }",
-                                "RHSM_USER=${ var.rhsm_user }",
-                                "RHSM_PASS=${ var.rhsm_pass }",
                                 "ROOTPEMFILES=${ var.root_pem_files }",
                                 "ISSUINGPEMFILES=${ var.issuing_pem_files }",
-                                "OS_VERSION=${ var.meta_os_version }" ]
+                                "OS_VERSION=${ var.meta_os_version }",
+                                "SNAPS=${ join(" ", var.build_guestos_snaps) }" ]
     }
 
     post-processor "manifest" {

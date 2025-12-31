@@ -6,7 +6,7 @@
 # ----------------------------------------------------------------------------
 
 # ISO Settings
-os_iso_file                     = "en-us_windows_server_2022_updated_march_2024_x64_dvd_f6700d18.iso"
+os_iso_file                     = "en-us_windows_server_2022_updated_sep_2025_x64_dvd_c3bc267b.iso"
 os_iso_path                     = "os/microsoft/server/2022"
 
 # OS Meta Data
@@ -14,9 +14,10 @@ meta_os_family                  = "Windows"
 meta_os_type                    = "Server"
 meta_os_vendor                  = "Microsoft"
 meta_os_version                 = "2022"
+meta_os_subversion              = "Std"
 
 # VM Hardware Settings
-vm_hardware_version             = 20
+vm_hardware_version             = 21
 vm_firmware                     = "efi"
 vm_cpu_sockets                  = 2
 vm_cpu_cores                    = 1

@@ -154,7 +154,7 @@
                     <RequiresUserInput>true</RequiresUserInput>
                 </SynchronousCommand>
                 <SynchronousCommand wcm:action="add">
-                    <CommandLine>cmd.exe /c e:\setup64 /s /v "/qb REBOOT=R"</CommandLine>
+                    <CommandLine>cmd.exe /c e:\setup.exe /s /v "/qb REBOOT=R"</CommandLine>
                     <Order>3</Order>
                     <Description>Install VMware Tools</Description>
                 </SynchronousCommand>

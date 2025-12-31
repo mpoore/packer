@@ -7,11 +7,45 @@
         },
     "disk": "/dev/sda",
     "partitions": [
-                        {"mountpoint": "/", "size": 0, "filesystem": "ext4"},
-                        {"mountpoint": "/boot", "size": 128, "filesystem": "ext4"},
-                        {"mountpoint": "/root", "size": 128, "filesystem": "ext4"},
-                        {"size": 128, "filesystem": "swap"}
-                    ],
+        {
+            "mountpoint": "/boot/efi",
+            "size": 1024,
+            "filesystem": "vfat",
+            "label": "EFI"
+        },
+        {
+            "mountpoint": "/boot",
+            "size": 1024,
+            "filesystem": "ext4",
+            "label": "BOOT"
+        },
+        {
+            "size": 8192,
+            "filesystem": "swap",
+            "lvm": {
+                "vg_name": "vg0",
+                "lv_name": "swap"
+            }
+        },
+        {
+            "mountpoint": "/var",
+            "size": 24576,
+            "filesystem": "xfs",
+            "lvm": {
+                "vg_name": "vg0",
+                "lv_name": "var"
+            }
+        },
+        {
+            "mountpoint": "/",
+            "size": 0,
+            "filesystem": "ext4",
+            "lvm": {
+                "vg_name": "vg0",
+                "lv_name": "root"
+            }
+        }
+    ],
     "bootmode": "efi",
     "packages": [
         "minimal",
@@ -36,10 +70,12 @@
         "iptables-save > /etc/systemd/scripts/ip4save",
         "systemctl restart iptables",
         "sed -i 's/PermitRootLogin no/PermitRootLogin yes/g' /etc/ssh/sshd_config",
-        "systemctl restart sshd.service"
+        "systemctl restart sshd.service",
+        "curl -fsSL https://github.com/saltstack/salt-install-guide/releases/latest/download/salt.repo | tee /etc/yum.repos.d/salt.repo",
+        "tdnf install -y salt-minion openssl"
     ],
     "linux_flavor": "linux",
     "network": {
         "type": "dhcp"
-    }    
+    }
 }

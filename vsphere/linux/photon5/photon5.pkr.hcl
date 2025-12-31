@@ -9,11 +9,15 @@
 #                           Packer Configuration                             #
 # -------------------------------------------------------------------------- #
 packer {
-    required_version = ">= 1.11.2"
+    required_version = ">= 1.14.3"
     required_plugins {
         vsphere = {
-            version = ">= 1.4.0"
+            version = ">= 2.0.0"
             source  = "github.com/hashicorp/vsphere"
+        }
+        salt = {
+            version = ">= 0.5.6"
+            source  = "github.com/mpoore/salt"
         }
     }
 }
@@ -21,8 +25,8 @@ packer {
 # -------------------------------------------------------------------------- #
 #                              Local Variables                               #
 # -------------------------------------------------------------------------- #
-locals { 
-    build_version               = formatdate("YY.MM (DD.hhmm)", timestamp())
+locals {
+    build_version               = formatdate("YY.MM", timestamp())
     build_date                  = formatdate("YYYY-MM-DD hh:mm ZZZ", timestamp())
     ks_content                  = {
                                     "ks.cfg" = templatefile("${abspath(path.root)}/cfg/ks.pkrtpl.hcl", {
@@ -32,7 +36,7 @@ locals {
                                         admin_password            = var.admin_password
                                     })
                                   }
-    vm_description              = "VER: ${ local.build_version }\nISO: ${ var.os_iso_file }"
+    vm_description              = "OS: ${ var.meta_os_vendor } ${ var.meta_os_family } ${ var.meta_os_version }\nVER: ${ local.build_version }\nDATE: ${ local.build_date }\nISO: ${ var.os_iso_file }"
 }
 
 # -------------------------------------------------------------------------- #
@@ -114,16 +118,12 @@ source "vsphere-iso" "photon5" {
 build {
     # Build sources
     sources                     = [ "source.vsphere-iso.photon5" ]
-    
-    # Shell Provisioner to execute scripts
-    provisioner "shell" {
-        execute_command     = "echo '${ var.build_password }' | {{.Vars}} sudo -E -S sh -eu '{{.Path}}'"
-        scripts             = var.script_files
-        environment_vars    = [ "PKISERVER=${ var.build_pkiserver }",
-                                "BUILDVERSION=${ local.build_version }",
-                                "BUILDREPO=${ var.build_repo }",
-                                "ROOTPEMFILES=${ var.root_pem_files }",
-                                "ISSUINGPEMFILES=${ var.issuing_pem_files }" ]
+
+    # Salt State provisioning
+    provisioner "salt" {
+        state_tree          = var.state_tree
+        pillar_tree         = var.pillar_tree
+        environment_vars    = [ "BUILDVERSION=${ local.build_version }" ]
     }
 
     post-processor "manifest" {

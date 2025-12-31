@@ -9,14 +9,14 @@
 #                           Packer Configuration                             #
 # -------------------------------------------------------------------------- #
 packer {
-    required_version = ">= 1.11.2"
+    required_version = ">= 1.14.0"
     required_plugins {
         vsphere = {
-            version = ">= v1.4.0"
+            version = ">= 1.4.2"
             source  = "github.com/hashicorp/vsphere"
         }
         windows-update = {
-            version = ">= 0.16.8"
+            version = ">= 0.16.10"
             source  = "github.com/rgl/windows-update"
         }
     }
@@ -26,7 +26,7 @@ packer {
 #                              Local Variables                               #
 # -------------------------------------------------------------------------- #
 locals { 
-    build_version               = formatdate("YY.MM (DD.hhmm)", timestamp())
+    build_version               = formatdate("YY.MM", timestamp())
     build_date                  = formatdate("YYYY-MM-DD hh:mm ZZZ", timestamp())
     core_floppy_content         = {
                                     "Autounattend.xml" = templatefile("${abspath(path.root)}/cfg/Autounattend.pkrtpl.hcl", {
@@ -52,7 +52,7 @@ locals {
                                         build_windows_image         = "SERVERSTANDARD"
                                     })
                                   }
-    vm_description              = "VER: ${ local.build_version }\nISO: ${ var.os_iso_file }"
+    vm_description              = "OS: ${ var.meta_os_vendor } ${ var.meta_os_family } ${ var.meta_os_version } ${ var.meta_os_subversion }\nVER: ${ local.build_version }\nDATE: ${ local.build_date }\nISO: ${ var.os_iso_file }"
 }
 
 # -------------------------------------------------------------------------- #
@@ -210,27 +210,6 @@ build {
         restart_timeout     = "120m"
     }      
     
-    # PowerShell Provisioner to execute scripts 
-    provisioner "powershell" {
-        elevated_user       = var.admin_username
-        elevated_password   = var.admin_password
-        scripts             = var.script_files
-        environment_vars    = [ "PKISERVER=${ var.build_pkiserver }",
-                                "ANSIBLEUSER=${ var.build_configmgmt_user }",
-                                "ANSIBLEKEY=${ var.build_configmgmt_key }",
-                                "BUILDUSER=${ var.build_username }",
-                                "BUILDPASS=${ var.build_password }",
-                                "ROOTPEMFILES=${ var.root_pem_files }",
-                                "ISSUINGPEMFILES=${ var.issuing_pem_files }" ]
-    }
-
-    # PowerShell Provisioner to execute commands
-    provisioner "powershell" {
-        elevated_user       = var.admin_username
-        elevated_password   = var.admin_password
-        inline              = var.inline_cmds
-    }
-
     post-processor "manifest" {
         output              = "manifests/vsphere-${source.name}.txt"
         strip_path          = true

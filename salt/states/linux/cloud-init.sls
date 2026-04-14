@@ -5,6 +5,7 @@
 # URL:          https://github.com/mpoore/packer
 # ----------------------------------------------------------------------------
 {% set os = grains['os'] %}
+{% set os_family = grains['os_family'] %}
 {% set growpart_pkgs = {
   'Debian': 'cloud-utils',
   'VMware Photon OS': 'cloud-utils',
@@ -27,6 +28,7 @@ cloud-init:
         datasource:
           VMware:
             vmware_cust_file_max_wait: 15
+        manage_etc_hosts: true
     - user: root
     - group: root
     - mode: 644
@@ -46,3 +48,33 @@ enable_ssh_pwauth:
     - backup: false
     - require:
       - pkg: cloud-init
+
+{% if os_family == 'RedHat' %}
+rhel_network_renderer:
+  file.managed:
+    - name: /etc/cloud/cloud.cfg.d/99-network-renderer.cfg
+    - contents: |
+        system_info:
+          network:
+            renderers: ['network-manager', 'sysconfig', 'eni', 'netplan', 'networkd']
+    - user: root
+    - group: root
+    - mode: 644
+    - require:
+      - pkg: cloud-init
+
+{% elif os_family == 'Debian' %}
+debian_network_renderer:
+  file.managed:
+    - name: /etc/cloud/cloud.cfg.d/99-network-renderer.cfg
+    - contents: |
+        system_info:
+          network:
+            renderers: ['netplan', 'network-manager', 'eni', 'sysconfig', 'networkd']
+    - user: root
+    - group: root
+    - mode: 644
+    - require:
+      - pkg: cloud-init
+
+{% endif %}

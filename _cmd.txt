@@ -11,4 +11,4 @@ packer build -color=false -timestamp-ui -var-file=vsphere/vsphere.pkrvars.hcl vs
 Console Messages Only
 =====================
 
-packer build -var-file=vsphere/vsphere.pkrvars.hcl vsphere/linux/centos10
+packer build -on-error=abort -var-file=vsphere/vsphere.pkrvars.hcl vsphere/linux/centos10

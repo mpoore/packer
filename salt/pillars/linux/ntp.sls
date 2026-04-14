@@ -5,4 +5,4 @@
 # URL:          https://github.com/mpoore/packer
 # ----------------------------------------------------------------------------
 timeservers:
-  - time.lab.mpoore.io
+  - 172.24.10.100

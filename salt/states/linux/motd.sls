@@ -12,7 +12,7 @@ rhel_motd:
   file.managed:
     - name: /etc/profile.d/motd.sh
     - source: salt://motd/motd.sh
-    - file_mode: '0755'
+    - mode: '0755'
 
 {% elif os_family == 'Debian' %}
 debian_motd_reset:
@@ -26,6 +26,6 @@ debian_motd:
   file.managed:
     - name: /etc/update-motd.d/00-motd
     - source: salt://motd/motd.sh
-    - file_mode: '0755'
+    - mode: '0755'
 
 {% endif %}

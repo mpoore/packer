@@ -41,7 +41,7 @@ certs-dir:
 
 update-ca-store:
   cmd.run:
-    - name: {{ update_cmd }}
+    - name: {{ update_cmd }} 2>/dev/null
     - onchanges:
       {% for cert_name in certs %}
       - file: {{ cert_name }}-cert

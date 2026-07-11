@@ -38,7 +38,7 @@ build_guestos_type              = "rhel9_64Guest"
 build_guestos_language          = "en_GB"
 build_guestos_keyboard          = "gb"
 build_guestos_timezone          = "UTC"
-build_guestos_packages          = [ "openssl", "salt-minion" ]
+build_guestos_packages          = [ "openssl", "salt-3006.23", "salt-minion-3006.23" ]
 
 # Provisioner Settings
 state_tree                      = "salt/states/linux"

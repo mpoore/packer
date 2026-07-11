@@ -16,7 +16,7 @@ meta_os_vendor                  = "RedHat"
 meta_os_version                 = "10.0"
 
 # VM Hardware Settings
-vm_hardware_version             = 21
+vm_hardware_version             = 22
 vm_firmware                     = "efi"
 vm_cpu_sockets                  = 1
 vm_cpu_cores                    = 1
@@ -34,7 +34,7 @@ vcenter_content_library_ovf     = true
 vcenter_content_library_destroy = true
 
 # VM OS Settings
-build_guestos_type              = "other5xLinux64Guest"
+build_guestos_type              = "rhel10_64Guest"
 build_guestos_language          = "en_GB"
 build_guestos_keyboard          = "gb"
 build_guestos_timezone          = "UTC"

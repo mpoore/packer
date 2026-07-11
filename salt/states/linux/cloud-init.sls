@@ -24,11 +24,11 @@ cloud-init:
   file.managed:
     - name: /etc/cloud/cloud.cfg.d/99-vmware-guest-customization.cfg
     - contents: |
-        disable_vmware_customization: false
+        disable_vmware_customization: true
         datasource:
-          VMware:
-            vmware_cust_file_max_wait: 15
-        manage_etc_hosts: true
+          VMware: {}
+        network:
+          config: disabled
     - user: root
     - group: root
     - mode: 644

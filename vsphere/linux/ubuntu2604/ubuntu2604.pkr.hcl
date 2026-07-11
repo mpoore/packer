@@ -1,6 +1,6 @@
 # ----------------------------------------------------------------------------
-# Name:         ubuntu2504.pkr.hcl
-# Description:  Build definition for Ubuntu 25.04
+# Name:         ubuntu2604.pkr.hcl
+# Description:  Build definition for Ubuntu 26.04 LTS
 # Author:       Michael Poore (@mpoore)
 # URL:          https://github.com/mpoore/packer
 # ----------------------------------------------------------------------------
@@ -9,14 +9,14 @@
 #                           Packer Configuration                             #
 # -------------------------------------------------------------------------- #
 packer {
-    required_version = ">= 1.14.0"
+    required_version = ">= 1.15.0"
     required_plugins {
         vsphere = {
-            version = ">= 1.4.2"
+            version = ">= 2.1.2"
             source  = "github.com/hashicorp/vsphere"
         }
         salt = {
-            version = ">= 0.5.0"
+            version = ">= 0.5.7"
             source  = "github.com/mpoore/salt"
         }
     }
@@ -44,7 +44,7 @@ locals {
 # -------------------------------------------------------------------------- #
 #                       Template Source Definitions                          #
 # -------------------------------------------------------------------------- #
-source "vsphere-iso" "ubuntu2504" {
+source "vsphere-iso" "ubuntu2604" {
     # vCenter
     vcenter_server              = var.vcenter_server
     username                    = var.vcenter_username
@@ -122,7 +122,7 @@ source "vsphere-iso" "ubuntu2504" {
 # -------------------------------------------------------------------------- #
 build {
     # Build sources
-    sources                 = [ "source.vsphere-iso.ubuntu2504" ]
+    sources                 = [ "source.vsphere-iso.ubuntu2604" ]
 
     # Salt State provisioning
     provisioner "salt" {

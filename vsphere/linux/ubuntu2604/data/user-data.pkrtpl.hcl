@@ -5,7 +5,7 @@
 # COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-# Ubuntu Server 24.04 LTS
+# Ubuntu Server 26.04 LTS
 
 autoinstall:
   version: 1
@@ -110,7 +110,7 @@ autoinstall:
         device: lv-root
 
   identity:
-    hostname: ubuntu2404
+    hostname: ubuntu2604
     username: ${build_username}
     password: "${build_password_encrypted}"
   ssh:
@@ -127,8 +127,8 @@ autoinstall:
     - sed -i -e 's/^#\?PasswordAuthentication.*/PasswordAuthentication yes/g' /target/etc/ssh/sshd_config
     - echo "${build_username} ALL=(ALL) NOPASSWD:ALL" > /target/etc/sudoers.d/${build_username}
     - curtin in-target --target=/target -- chmod 440 /etc/sudoers.d/${build_username}
-    - curtin in-target --target=/target -- mkdir -p /etc/apt/keyrings
+    - curtin in-target --target=/target -- mkdir -m 755 -p /etc/apt/keyrings
     - curtin in-target --target=/target -- bash -c "curl -fsSL https://packages.broadcom.com/artifactory/api/security/keypair/SaltProjectKey/public | gpg --dearmor | sudo tee /etc/apt/keyrings/salt-archive-keyring.pgp > /dev/null"
-    - curtin in-target --target=/target -- bash -c "curl -fsSL https://github.com/saltstack/salt-install-guide/releases/latest/download/salt.sources | sudo tee /etc/apt/sources.list.d/salt.sources"
+    - curtin in-target --target=/target -- bash -c "curl -fsSL https://github.com/saltstack/salt-install-guide/releases/latest/download/salt.sources | sudo tee /etc/apt/sources.list.d/salt.sources > /dev/null"
     - curtin in-target --target=/target -- apt-get update
-    - curtin in-target --target=/target -- apt-get install -y salt-minion=3006.23 salt-common=3006.23
+    - curtin in-target --target=/target -- apt-get install -y salt-minion

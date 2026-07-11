@@ -98,7 +98,7 @@ dnf makecache
 dnf install epel-release -y
 dnf makecache
 dnf install -y sudo open-vm-tools perl
-curl -fsSL https://github.com/saltstack/salt-install-guide/releases/latest/download/salt.repo | tee /etc/yum.repos.d/salt.repo
+curl -fsSL https://github.com/saltstack/salt-install-guide/releases/latest/download/salt.repo | sudo tee /etc/yum.repos.d/salt.repo
 dnf clean expire-cache
 %{ if build_guestos_packages != "" ~}
 dnf install -y ${build_guestos_packages}

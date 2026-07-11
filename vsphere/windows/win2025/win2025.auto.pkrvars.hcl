@@ -6,7 +6,7 @@
 # ----------------------------------------------------------------------------
 
 # ISO Settings
-os_iso_file                     = "en-us_windows_server_2025_updated_sep_2025_x64_dvd_6d1ad20d.iso"
+os_iso_file                     = "en-us_windows_server_2025_updated_march_2026_x64_dvd_8e06425a.iso"
 os_iso_path                     = "os/microsoft/server/2025"
 
 # OS Meta Data
@@ -17,11 +17,11 @@ meta_os_version                 = "2025"
 meta_os_subversion              = "Std"
 
 # VM Hardware Settings
-vm_hardware_version             = 21
+vm_hardware_version             = 22
 vm_firmware                     = "efi"
 vm_cpu_sockets                  = 2
 vm_cpu_cores                    = 1
-vm_mem_size                     = 2048
+vm_mem_size                     = 4096
 vm_nic_type                     = "vmxnet3"
 vm_disk_controller              = ["pvscsi"]
 vm_disk_size                    = 51200

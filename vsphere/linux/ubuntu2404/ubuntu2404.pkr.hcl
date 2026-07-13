@@ -9,14 +9,14 @@
 #                           Packer Configuration                             #
 # -------------------------------------------------------------------------- #
 packer {
-    required_version = ">= 1.14.0"
+    required_version = ">= 1.15.4"
     required_plugins {
         vsphere = {
-            version = ">= 1.4.2"
+            version = ">= 2.2.0"
             source  = "github.com/hashicorp/vsphere"
         }
         salt = {
-            version = ">= 0.5.0"
+            version = ">= 0.5.7"
             source  = "github.com/mpoore/salt"
         }
     }
@@ -26,9 +26,8 @@ packer {
 #                              Local Variables                               #
 # -------------------------------------------------------------------------- #
 locals { 
-    build_name_suffix            = var.build_branch == "main" ? "" : "-${ var.build_branch }"
-    is_release_branch            = contains(["main", "dev"], var.build_branch)
-
+    build_name_suffix           = var.build_branch == "main" ? "" : "-${ var.build_branch }"
+    is_release_branch           = contains(["main", "dev"], var.build_branch)
     build_version               = formatdate("YY.MM", timestamp())
     build_date                  = formatdate("YYYY-MM-DD hh:mm ZZZ", timestamp())
     data_source_content         = {
@@ -41,7 +40,7 @@ locals {
                                         build_guestos_timezone    = var.build_guestos_timezone
                                     })
                                   }
-    vm_description              = "OS: ${ var.meta_os_vendor } ${ var.meta_os_family } ${ var.meta_os_version }\nVER: ${ local.build_version }\nDATE: ${ local.build_date }\nISO: ${ var.os_iso_file }"
+    vm_description              = "OS: ${ var.meta_os_vendor } ${ var.meta_os_family } ${ var.meta_os_version }\nVER: ${ local.build_version } (${ var.build_branch })\nDATE: ${ local.build_date }\nISO: ${ var.os_iso_file }"
 }
 
 # -------------------------------------------------------------------------- #
@@ -131,7 +130,7 @@ build {
     provisioner "salt" {
         state_tree          = var.state_tree
         pillar_tree         = var.pillar_tree
-        environment_vars    = [ "BUILDVERSION=${ local.build_version }" ]
+        environment_vars        = [ "BUILDVERSION=${ local.build_version }", "BUILDDATE=${ local.build_date }", "BUILDBRANCH=${ var.build_branch }" ]
     }
 
     post-processor "manifest" {
@@ -141,6 +140,7 @@ build {
             vcenter_fqdn    = var.vcenter_server
             vcenter_folder  = var.vcenter_folder
             iso_file        = var.os_iso_file
+            build_branch        = var.build_branch
             build_repo      = var.build_repo
             build_version   = local.build_version
             build_date      = local.build_date

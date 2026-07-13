@@ -9,16 +9,16 @@
 #                           Packer Configuration                             #
 # -------------------------------------------------------------------------- #
 packer {
-    required_version            = ">= 1.15.0"
+    required_version = ">= 1.15.4"
     required_plugins {
-        vsphere                 = {
-                                    version = ">= 2.1.2"
-                                    source = "github.com/hashicorp/vsphere"
-                                }
-        salt                    = {
-                                    version = ">= 0.5.7"
-                                    source  = "github.com/mpoore/salt"
-                                }
+        vsphere = {
+            version = ">= 2.2.0"
+            source  = "github.com/hashicorp/vsphere"
+        }
+        salt = {
+            version = ">= 0.5.7"
+            source  = "github.com/mpoore/salt"
+        }
     }
 }
 

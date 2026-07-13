@@ -2,6 +2,7 @@ variables:
   FF_TIMESTAMPS: true
 
 .packer_build:
+  stage: build
   image: mpoore/packer-ci:latest
   before_script:
     - export PKR_VAR_vcenter_username="$vcenter_username"

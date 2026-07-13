@@ -26,6 +26,9 @@ packer {
 #                              Local Variables                               #
 # -------------------------------------------------------------------------- #
 locals { 
+    build_name_suffix            = var.build_branch == "main" ? "" : "-${ var.build_branch }"
+    is_release_branch            = contains(["main", "dev"], var.build_branch)
+
     build_version               = formatdate("YY.MM", timestamp())
     build_date                  = formatdate("YYYY-MM-DD hh:mm ZZZ", timestamp())
     data_source_content         = {
@@ -56,14 +59,14 @@ source "vsphere-iso" "ubuntu2404" {
     datastore                   = var.vcenter_datastore
 
     # Content Library and Template Settings
-    convert_to_template         = var.vcenter_convert_template
+    convert_to_template         = var.vcenter_convert_template && local.is_release_branch
     create_snapshot             = var.vcenter_snapshot
     snapshot_name               = var.vcenter_snapshot_name
     dynamic "content_library_destination" {
-        for_each = var.vcenter_content_library != null ? [1] : []
+        for_each = (var.vcenter_content_library != null && local.is_release_branch) ? [1] : []
             content {
                 library         = var.vcenter_content_library
-                name            = "${ source.name }"
+                name            = "${ source.name }${ local.build_name_suffix }"
                 description     = local.vm_description
                 ovf             = var.vcenter_content_library_ovf
                 destroy         = var.vcenter_content_library_destroy
@@ -73,7 +76,7 @@ source "vsphere-iso" "ubuntu2404" {
 
     # Virtual Machine
     guest_os_type               = var.build_guestos_type
-    vm_name                     = "${ source.name }"
+    vm_name                     = "${ source.name }${ local.build_name_suffix }"
     notes                       = local.vm_description
     firmware                    = var.vm_firmware
     CPUs                        = var.vm_cpu_sockets

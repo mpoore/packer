@@ -382,6 +382,11 @@ variable "build_repo" {
     description = "Source control respository this build comes from"
     default     = "https://github.com/mpoore/packer"
 }
+variable "build_branch" {
+    type        = string
+    description = "Git branch this build was triggered from, used to suffix non-main build names. Defaults to \"test\" for ad-hoc builds (e.g. from a laptop) that aren't tied to a CI branch."
+    default     = "test"
+}
 variable "build_pkiserver" {
     type        = string
     description = "Base URL for acquiring SSL certificates"

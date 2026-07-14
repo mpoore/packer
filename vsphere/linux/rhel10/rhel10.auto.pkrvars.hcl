@@ -6,14 +6,14 @@
 # ----------------------------------------------------------------------------
 
 # ISO Settings
-os_iso_file                     = "rhel-10.0-x86_64-dvd.iso"
+os_iso_file                     = "rhel-10.2-x86_64-dvd.iso"
 os_iso_path                     = "os/redhat/10"
 
 # OS Meta Data
 meta_os_family                  = "Linux"
 meta_os_type                    = "Server"
 meta_os_vendor                  = "RedHat"
-meta_os_version                 = "10.0"
+meta_os_version                 = "10.2"
 
 # VM Hardware Settings
 vm_hardware_version             = 22

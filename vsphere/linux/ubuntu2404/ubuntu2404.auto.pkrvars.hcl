@@ -6,14 +6,14 @@
 # ----------------------------------------------------------------------------
 
 # ISO Settings
-os_iso_file                     = "ubuntu-24.04.3-live-server-amd64.iso"
+os_iso_file                     = "ubuntu-24.04.4-live-server-amd64.iso"
 os_iso_path                     = "os/ubuntu/24"
 
 # OS Meta Data
 meta_os_family                  = "Linux"
 meta_os_type                    = "Server"
 meta_os_vendor                  = "Ubuntu"
-meta_os_version                 = "24.04.3 LTS"
+meta_os_version                 = "24.04.4 LTS"
 
 # VM Hardware Settings
 vm_hardware_version             = 21

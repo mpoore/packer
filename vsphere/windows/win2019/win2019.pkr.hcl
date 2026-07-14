@@ -50,7 +50,7 @@ locals {
                                         build_windows_image         = "SERVERSTANDARD"
                                     })
                                   }
-    vm_description              = "OS: ${ var.meta_os_vendor } ${ var.meta_os_family } ${ var.meta_os_version } (${ var.meta_os_subversion })\nVER: ${ local.build_version } (${ var.build_branch })\nDATE: ${ local.build_date }\nISO: ${ var.os_iso_file }"
+    vm_description              = "OS: ${ var.meta_os_vendor } ${ var.meta_os_family } ${ var.meta_os_version }\nVER: ${ local.build_version } (${ var.build_branch })\nDATE: ${ local.build_date }\nISO: ${ var.os_iso_file }"
 }
 
 # -------------------------------------------------------------------------- #

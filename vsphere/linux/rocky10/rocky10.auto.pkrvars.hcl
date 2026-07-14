@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Name:         centos10.auto.pkrvars.hcl
+# Name:         rocky10.auto.pkrvars.hcl
 # Description:  Required vSphere variables for Rocky 10 Packer builds
 # Author:       Michael Poore (@mpoore)
 # URL:          https://github.com/mpoore/packer

@@ -21,7 +21,7 @@ vm_hardware_version             = 21
 vm_firmware                     = "efi"
 vm_cpu_sockets                  = 2
 vm_cpu_cores                    = 1
-vm_mem_size                     = 2048
+vm_mem_size                     = 4096
 vm_nic_type                     = "vmxnet3"
 vm_disk_controller              = ["pvscsi"]
 vm_disk_size                    = 51200
@@ -42,10 +42,5 @@ build_guestos_systemlocale      = "en-US"
 build_guestos_timezone          = "GMT Standard Time"
 
 # Provisioner Settings
-script_files                    = [ "scripts/windows/common/hibernation.ps1",
-                                    "scripts/windows/common/administrator.ps1",
-                                    "scripts/windows/common/tls.ps1",
-                                    "scripts/windows/common/pki.ps1",
-                                    "scripts/windows/common/cloud-init.ps1",
-                                    "scripts/windows/common/rdp.ps1" ]
-inline_cmds                     = [ "Get-EventLog -LogName * | ForEach { Clear-EventLog -LogName $_.Log }" ]
+state_tree                      = "salt/states/windows"
+pillar_tree                     = "salt/pillars"

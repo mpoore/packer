@@ -15,9 +15,9 @@ packer {
             version = ">= 2.2.0"
             source  = "github.com/hashicorp/vsphere"
         }
-        windows-update = {
-            version = ">= 0.18.4"
-            source  = "github.com/rgl/windows-update"
+        salt = {
+            version = ">= 0.5.7"
+            source  = "github.com/mpoore/salt"
         }
     }
 }
@@ -30,7 +30,7 @@ locals {
     is_release_branch           = contains(["main", "dev"], var.build_branch)
     build_version               = formatdate("YY.MM-DD", timestamp())
     build_date                  = formatdate("YYYY-MM-DD hh:mm ZZZ", timestamp())
-    core_floppy_content         = {
+    core_autounattend           = {
                                     "Autounattend.xml" = templatefile("${abspath(path.root)}/cfg/Autounattend.pkrtpl.hcl", {
                                         admin_password              = var.admin_password
                                         build_username              = var.build_username
@@ -42,7 +42,7 @@ locals {
                                         build_windows_image         = "SERVERSTANDARDCORE"
                                     })
                                   }
-    dexp_floppy_content         = {
+    dexp_autounattend           = {
                                     "Autounattend.xml" = templatefile("${abspath(path.root)}/cfg/Autounattend.pkrtpl.hcl", {
                                         admin_password              = var.admin_password
                                         build_username              = var.build_username
@@ -111,8 +111,8 @@ source "vsphere-iso" "win2022stddexp" {
 
     # Removeable Media
     iso_paths                   = [ "[${ var.vcenter_iso_datastore }] ${ var.os_iso_path }/${ var.os_iso_file }", "[] /vmimages/tools-isoimages/windows.iso" ]
-    floppy_files                = [ "scripts/windows/common/initialise.ps1" ]
-    floppy_content              = local.dexp_floppy_content
+    cd_files                    = [ "scripts/windows/" ]
+    cd_content                  = local.dexp_autounattend
 
     # Boot and Provisioner
     boot_order                  = var.vm_boot_order
@@ -177,8 +177,8 @@ source "vsphere-iso" "win2022stdcore" {
 
     # Removeable Media
     iso_paths                   = [ "[${ var.vcenter_iso_datastore }] ${ var.os_iso_path }/${ var.os_iso_file }", "[] /vmimages/tools-isoimages/windows.iso" ]
-    floppy_files                = [ "scripts/windows/common/initialise.ps1" ]
-    floppy_content              = local.core_floppy_content
+    cd_files                    = [ "scripts/windows/" ]
+    cd_content                  = local.core_autounattend
 
     # Boot and Provisioner
     boot_order                  = var.vm_boot_order
@@ -200,16 +200,11 @@ build {
     sources                 = [ "source.vsphere-iso.win2022stddexp",
                                 "source.vsphere-iso.win2022stdcore" ]
     
-    # Windows Update using https://github.com/rgl/packer-provisioner-windows-update
-    provisioner "windows-update" {
-        pause_before        = "30s"
-        search_criteria     = "IsInstalled=0"
-        filters             = [ "exclude:$_.Title -like '*VMware*'",
-                                "exclude:$_.Title -like '*Preview*'",
-                                "exclude:$_.Title -like '*Defender*'",
-                                "exclude:$_.InstallationBehavior.CanRequestUserInput",
-                                "include:$true" ]
-        restart_timeout     = "120m"
+    # Salt State provisioning
+    provisioner "salt" {
+        state_tree          = var.state_tree
+        pillar_tree         = var.pillar_tree
+        environment_vars    = [ "BUILDVERSION=${ local.build_version }", "BUILDDATE=${ local.build_date }", "BUILDBRANCH=${ var.build_branch }" ]
     }      
     
     post-processor "manifest" {

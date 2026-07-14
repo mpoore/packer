@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Name:         win2022.pkr.hcl
+# Name:         win2025.pkr.hcl
 # Description:  Build definition for Windows 2025
 # Author:       Michael Poore (@mpoore)
 # URL:          https://github.com/mpoore/packer

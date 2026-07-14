@@ -23,7 +23,7 @@ vm_cpu_cores                    = 1
 vm_mem_size                     = 2048
 vm_nic_type                     = "vmxnet3"
 vm_disk_controller              = ["pvscsi"]
-vm_disk_size                    = 32768
+vm_disk_size                    = 65536
 vm_disk_thin                    = true
 vm_cdrom_type                   = "sata"
 

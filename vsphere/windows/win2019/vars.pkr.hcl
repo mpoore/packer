@@ -342,6 +342,11 @@ variable "build_ip_timeout" {
     description = "Set the timeout for the build to obtain an IP address (e.g. '1h5m2s' or '2s')"
     default     = "15m"
 }
+variable "build_winrm_timeout" {
+    type        = string
+    description = "Set the timeout for the WINRM communicator to connect (e.g. '1h5m2s' or '2s')"
+    default     = "60m"
+}
 variable "build_shutdown_timeout" {
     type = string
     description = "Set the timeout for the build to shutdown after the shutdown command is issued (e.g. '1h5m2s' or '2s')"

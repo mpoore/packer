@@ -38,7 +38,12 @@ build_guestos_type              = "rhel10_64Guest"
 build_guestos_language          = "en_GB"
 build_guestos_keyboard          = "gb"
 build_guestos_timezone          = "UTC"
-build_guestos_packages          = [ "salt-minion" ]
+build_guestos_packages          = [ "openssl", "salt-3006.23", "salt-minion-3006.23" ]
+
+# Timeout Settings
+build_ip_timeout                = "15m"
+build_ssh_timeout               = "5m"
+build_shutdown_timeout          = "5m"
 
 # Provisioner Settings
 state_tree                      = "salt/states/linux"

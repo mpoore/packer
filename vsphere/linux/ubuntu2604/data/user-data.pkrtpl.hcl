@@ -131,4 +131,4 @@ autoinstall:
     - curtin in-target --target=/target -- bash -c "curl -fsSL https://packages.broadcom.com/artifactory/api/security/keypair/SaltProjectKey/public | gpg --dearmor | sudo tee /etc/apt/keyrings/salt-archive-keyring.pgp > /dev/null"
     - curtin in-target --target=/target -- bash -c "curl -fsSL https://github.com/saltstack/salt-install-guide/releases/latest/download/salt.sources | sudo tee /etc/apt/sources.list.d/salt.sources > /dev/null"
     - curtin in-target --target=/target -- apt-get update
-    - curtin in-target --target=/target -- apt-get install -y salt-minion
+    - curtin in-target --target=/target -- apt-get install -y salt-minion=3006.23 salt-common=3006.23

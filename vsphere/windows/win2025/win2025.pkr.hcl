@@ -122,6 +122,7 @@ source "vsphere-iso" "win2025stddexp" {
     communicator                = "winrm"
     winrm_username              = var.admin_username
     winrm_password              = var.admin_password
+    winrm_timeout               = var.build_winrm_timeout
     shutdown_command            = "shutdown /s /t 10 /f /d p:4:1 /c \"Packer Complete\""
     shutdown_timeout            = var.build_shutdown_timeout
 }
@@ -188,6 +189,7 @@ source "vsphere-iso" "win2025stdcore" {
     communicator                = "winrm"
     winrm_username              = var.admin_username
     winrm_password              = var.admin_password
+    winrm_timeout               = var.build_winrm_timeout
     shutdown_command            = "shutdown /s /t 10 /f /d p:4:1 /c \"Packer Complete\""
     shutdown_timeout            = var.build_shutdown_timeout
 }

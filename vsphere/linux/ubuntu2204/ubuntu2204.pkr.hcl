@@ -114,7 +114,7 @@ source "vsphere-iso" "ubuntu2204" {
     communicator                = "ssh"
     ssh_username                = var.build_username
     ssh_password                = var.build_password
-    ssh_timeout                 = "30m"
+    ssh_timeout                 = var.build_ssh_timeout
     shutdown_command            = "echo '${ var.build_password }' | sudo shutdown -h now"
     shutdown_timeout            = var.build_shutdown_timeout
 }

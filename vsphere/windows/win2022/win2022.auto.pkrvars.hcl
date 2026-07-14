@@ -17,7 +17,7 @@ meta_os_version                 = "2022"
 meta_os_subversion              = "Std"
 
 # VM Hardware Settings
-vm_hardware_version             = 21
+vm_hardware_version             = 22
 vm_firmware                     = "efi"
 vm_cpu_sockets                  = 2
 vm_cpu_cores                    = 1

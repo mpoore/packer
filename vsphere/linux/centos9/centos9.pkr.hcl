@@ -28,7 +28,7 @@ packer {
 locals {
     build_name_suffix           = var.build_branch == "main" ? "" : "-${ var.build_branch }"
     is_release_branch           = contains(["main", "dev"], var.build_branch)
-    build_version               = formatdate("YY.MM", timestamp())
+    build_version               = formatdate("YY.MM-DD", timestamp())
     build_date                  = formatdate("YYYY-MM-DD hh:mm ZZZ", timestamp())
     ks_content                  = {
                                     "ks.cfg" = templatefile("${abspath(path.root)}/cfg/ks.pkrtpl.hcl", {

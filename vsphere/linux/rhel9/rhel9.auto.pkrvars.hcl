@@ -6,14 +6,14 @@
 # ----------------------------------------------------------------------------
 
 # ISO Settings
-os_iso_file                     = "rhel-9.6-x86_64-dvd.iso"
+os_iso_file                     = "rhel-9.8-x86_64-dvd.iso"
 os_iso_path                     = "os/redhat/9"
 
 # OS Meta Data
 meta_os_family                  = "Linux"
 meta_os_type                    = "Server"
 meta_os_vendor                  = "RHEL"
-meta_os_version                 = "9.6"
+meta_os_version                 = "9.8"
 
 # VM Hardware Settings
 vm_hardware_version             = 21

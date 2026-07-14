@@ -28,7 +28,7 @@ packer {
 locals { 
     build_name_suffix           = var.build_branch == "main" ? "" : "-${ var.build_branch }"
     is_release_branch           = contains(["main", "dev"], var.build_branch)
-    build_version               = formatdate("YY.MM", timestamp())
+    build_version               = formatdate("YY.MM-DD", timestamp())
     build_date                  = formatdate("YYYY-MM-DD hh:mm ZZZ", timestamp())
     data_source_content         = {
                                     "/meta-data" = file("${abspath(path.root)}/data/meta-data")
@@ -130,7 +130,7 @@ build {
     provisioner "salt" {
         state_tree          = var.state_tree
         pillar_tree         = var.pillar_tree
-        environment_vars        = [ "BUILDVERSION=${ local.build_version }", "BUILDDATE=${ local.build_date }", "BUILDBRANCH=${ var.build_branch }" ]
+        environment_vars    = [ "BUILDVERSION=${ local.build_version }", "BUILDDATE=${ local.build_date }", "BUILDBRANCH=${ var.build_branch }" ]
     }
 
     post-processor "manifest" {
@@ -140,7 +140,7 @@ build {
             vcenter_fqdn    = var.vcenter_server
             vcenter_folder  = var.vcenter_folder
             iso_file        = var.os_iso_file
-            build_branch        = var.build_branch
+            build_branch    = var.build_branch
             build_repo      = var.build_repo
             build_version   = local.build_version
             build_date      = local.build_date

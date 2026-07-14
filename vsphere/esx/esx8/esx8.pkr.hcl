@@ -9,10 +9,10 @@
 #                           Packer Configuration                             #
 # -------------------------------------------------------------------------- #
 packer {
-    required_version = ">= 1.13.1"
+    required_version = ">= 1.15.4"
     required_plugins {
         vsphere = {
-            version = ">= v1.4.2"
+            version = ">= v2.2.0"
             source  = "github.com/hashicorp/vsphere"
         }
     }
@@ -22,7 +22,9 @@ packer {
 #                              Local Variables                               #
 # -------------------------------------------------------------------------- #
 locals { 
-    build_version               = formatdate("YY.MM.DD-hhmm", timestamp())
+    build_name_suffix           = var.build_branch == "main" ? "" : "-${ var.build_branch }"
+    is_release_branch           = contains(["main", "dev"], var.build_branch)
+    build_version               = formatdate("YY.MM-DD", timestamp())
     build_date                  = formatdate("YYYY-MM-DD hh:mm ZZZ", timestamp())
     ks_content                  = {
                                     "KS.CFG" = templatefile("${abspath(path.root)}/cfg/ks.pkrtpl.hcl", {
@@ -32,8 +34,8 @@ locals {
                                   }
     os_version_elements         = compact([ var.meta_os_version, var.meta_os_subversion ])
     os_version                  = join("", local.os_version_elements)
-    vm_description              = "OS: ${ var.meta_os_vendor } ${ var.meta_os_family } ${ local.os_version }\nVER: ${ local.build_version }\nISO: ${ var.os_iso_file }"
-    vm_name                     = "esx-${ local.os_version }"
+    vm_description              = "OS: ${ var.meta_os_vendor } ${ var.meta_os_family } ${ var.meta_os_version }\nVER: ${ local.build_version } (${ var.build_branch })\nDATE: ${ local.build_date }\nISO: ${ var.os_iso_file }"
+    vm_name                     = "esx-${ local.os_version }${ local.build_name_suffix }"
 }
 
 # -------------------------------------------------------------------------- #
@@ -51,11 +53,11 @@ source "vsphere-iso" "esx8" {
     datastore                   = var.vcenter_datastore
 
     # Template Settings
-    convert_to_template         = var.vcenter_convert_template
+    convert_to_template         = var.vcenter_convert_template && local.is_release_branch
     create_snapshot             = var.vcenter_snapshot
     snapshot_name               = var.vcenter_snapshot_name
     dynamic "content_library_destination" {
-        for_each = var.vcenter_content_library != null ? [1] : []
+        for_each = (var.vcenter_content_library != null && local.is_release_branch) ? [1] : []
             content {
                 library         = var.vcenter_content_library
                 name            = local.vm_name
@@ -138,6 +140,7 @@ build {
             vcenter_fqdn    = var.vcenter_server
             vcenter_folder  = var.vcenter_folder
             iso_file        = var.os_iso_file
+            build_branch    = var.build_branch
             build_repo      = var.build_repo
             build_version   = local.build_version
             build_date      = local.build_date

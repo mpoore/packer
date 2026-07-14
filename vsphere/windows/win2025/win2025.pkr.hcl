@@ -9,10 +9,10 @@
 #                           Packer Configuration                             #
 # -------------------------------------------------------------------------- #
 packer {
-    required_version = ">= 1.14.3"
+    required_version = ">= 1.15.4"
     required_plugins {
         vsphere = {
-            version = ">= 2.0.0"
+            version = ">= 2.2.0"
             source  = "github.com/hashicorp/vsphere"
         }
         salt = {
@@ -26,7 +26,9 @@ packer {
 #                              Local Variables                               #
 # -------------------------------------------------------------------------- #
 locals {
-    build_version               = formatdate("YY.MM", timestamp())
+    build_name_suffix           = var.build_branch == "main" ? "" : "-${ var.build_branch }"
+    is_release_branch           = contains(["main", "dev"], var.build_branch)
+    build_version               = formatdate("YY.MM-DD", timestamp())
     build_date                  = formatdate("YYYY-MM-DD hh:mm ZZZ", timestamp())
     core_autounattend           = {
                                     "Autounattend.xml" = templatefile("${abspath(path.root)}/cfg/Autounattend.pkrtpl.hcl", {
@@ -52,7 +54,7 @@ locals {
                                         build_windows_image         = "SERVERSTANDARD"
                                     })
                                   }
-    vm_description              = "OS: ${ var.meta_os_vendor } ${ var.meta_os_family } ${ var.meta_os_version } ${ var.meta_os_subversion }\nVER: ${ local.build_version }\nDATE: ${ local.build_date }\nISO: ${ var.os_iso_file }"
+    vm_description              = "OS: ${ var.meta_os_vendor } ${ var.meta_os_family } ${ var.meta_os_version } (${ var.meta_os_subversion })\nVER: ${ local.build_version } (${ var.build_branch })\nDATE: ${ local.build_date }\nISO: ${ var.os_iso_file }"
 }
 
 # -------------------------------------------------------------------------- #
@@ -70,14 +72,14 @@ source "vsphere-iso" "win2025stddexp" {
     datastore                   = var.vcenter_datastore
 
     # Content Library and Template Settings
-    convert_to_template         = var.vcenter_convert_template
+    convert_to_template         = var.vcenter_convert_template && local.is_release_branch
     create_snapshot             = var.vcenter_snapshot
     snapshot_name               = var.vcenter_snapshot_name
     dynamic "content_library_destination" {
-        for_each = var.vcenter_content_library != null ? [1] : []
+        for_each = (var.vcenter_content_library != null && local.is_release_branch) ? [1] : []
             content {
                 library         = var.vcenter_content_library
-                name            = "${ source.name }"
+                name            = "${ source.name }${ local.build_name_suffix }"
                 description     = local.vm_description
                 ovf             = var.vcenter_content_library_ovf
                 destroy         = var.vcenter_content_library_destroy
@@ -87,7 +89,7 @@ source "vsphere-iso" "win2025stddexp" {
 
     # Virtual Machine
     guest_os_type               = var.build_guestos_type
-    vm_name                     = "${ source.name }"
+    vm_name                     = "${ source.name }${ local.build_name_suffix }"
     notes                       = local.vm_description
     firmware                    = var.vm_firmware
     CPUs                        = var.vm_cpu_sockets
@@ -136,14 +138,14 @@ source "vsphere-iso" "win2025stdcore" {
     datastore                   = var.vcenter_datastore
 
     # Content Library and Template Settings
-    convert_to_template         = var.vcenter_convert_template
+    convert_to_template         = var.vcenter_convert_template && local.is_release_branch
     create_snapshot             = var.vcenter_snapshot
     snapshot_name               = var.vcenter_snapshot_name
     dynamic "content_library_destination" {
-        for_each = var.vcenter_content_library != null ? [1] : []
+        for_each = (var.vcenter_content_library != null && local.is_release_branch) ? [1] : []
             content {
                 library         = var.vcenter_content_library
-                name            = "${ source.name }"
+                name            = "${ source.name }${ local.build_name_suffix }"
                 description     = local.vm_description
                 ovf             = var.vcenter_content_library_ovf
                 destroy         = var.vcenter_content_library_destroy
@@ -153,7 +155,7 @@ source "vsphere-iso" "win2025stdcore" {
 
     # Virtual Machine
     guest_os_type               = var.build_guestos_type
-    vm_name                     = "${ source.name }"
+    vm_name                     = "${ source.name }${ local.build_name_suffix }"
     notes                       = local.vm_description
     firmware                    = var.vm_firmware
     CPUs                        = var.vm_cpu_sockets
@@ -202,6 +204,7 @@ build {
     provisioner "salt" {
         state_tree          = var.state_tree
         pillar_tree         = var.pillar_tree
+        environment_vars    = [ "BUILDVERSION=${ local.build_version }", "BUILDDATE=${ local.build_date }", "BUILDBRANCH=${ var.build_branch }" ]
     }
 
     post-processor "manifest" {
@@ -211,6 +214,7 @@ build {
             vcenter_fqdn    = var.vcenter_server
             vcenter_folder  = var.vcenter_folder
             iso_file        = var.os_iso_file
+            build_branch    = var.build_branch
             build_repo      = var.build_repo
             build_version   = local.build_version
             build_date      = local.build_date

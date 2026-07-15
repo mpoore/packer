@@ -42,7 +42,7 @@ build_guestos_packages          = [ "openssl", "salt-3006.23", "salt-minion-3006
 
 # Timeout Settings
 build_ip_timeout                = "15m"
-build_ssh_timeout               = "20m"
+build_ssh_timeout               = "5m"
 build_shutdown_timeout          = "5m"
 
 # Provisioner Settings

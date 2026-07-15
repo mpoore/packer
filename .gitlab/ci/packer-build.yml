@@ -10,7 +10,7 @@ variables:
     - export PKR_VAR_admin_password="$admin_password"
     - export PKR_VAR_build_username="$build_username"
     - export PKR_VAR_build_password="$build_password"
-    - export PKR_VAR_build_password_encrypted="$(cat "$build_password_encrypted")"
+    - export PKR_VAR_build_password_encrypted="$(openssl passwd -6 -stdin <<< "$build_password")"
     - export PKR_VAR_rhsm_user="$rhsm_user"
     - export PKR_VAR_rhsm_pass="$rhsm_pass"
     - export PKR_VAR_vcenter_server="$vcenter_server"

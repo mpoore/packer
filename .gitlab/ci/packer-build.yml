@@ -5,33 +5,33 @@ variables:
   stage: build
   image: mpoore/packer-ci:latest
   before_script:
-    - export PKR_VAR_vcenter_username="$vcenter_username"
-    - export PKR_VAR_vcenter_password="$vcenter_password"
-    - export PKR_VAR_admin_password="$admin_password"
-    - export PKR_VAR_build_username="$build_username"
-    - export PKR_VAR_build_password="$build_password"
-    - export PKR_VAR_build_password_encrypted="$build_password_encrypted"
-    - export PKR_VAR_rhsm_user="$rhsm_user"
-    - export PKR_VAR_rhsm_pass="$rhsm_pass"
-    - export PKR_VAR_vcenter_server="$vcenter_server"
-    - export PKR_VAR_vcenter_datacenter="$vcenter_datacenter"
-    - export PKR_VAR_vcenter_cluster="$vcenter_cluster"
-    - export PKR_VAR_vcenter_folder="$vcenter_folder"
-    - export PKR_VAR_vcenter_datastore="$vcenter_datastore"
-    - export PKR_VAR_vcenter_network="$vcenter_network"
-    - export PKR_VAR_vcenter_iso_datastore="$vcenter_iso_datastore"
-    - export PKR_VAR_vcenter_content_library="$vcenter_content_library"
-    - export PKR_VAR_root_pem_files="$root_pem_files"
-    - export PKR_VAR_issuing_pem_files="$issuing_pem_files"
-    - export PKR_VAR_build_branch="$CI_COMMIT_REF_NAME"
+    - export PKR_VAR_vcenter_username='$vcenter_username'
+    - export PKR_VAR_vcenter_password='$vcenter_password'
+    - export PKR_VAR_admin_password='$admin_password'
+    - export PKR_VAR_build_username='$build_username'
+    - export PKR_VAR_build_password='$build_password'
+    - export PKR_VAR_build_password_encrypted='$build_password_encrypted'
+    - export PKR_VAR_rhsm_user='$rhsm_user'
+    - export PKR_VAR_rhsm_pass='$rhsm_pass'
+    - export PKR_VAR_vcenter_server='$vcenter_server'
+    - export PKR_VAR_vcenter_datacenter='$vcenter_datacenter'
+    - export PKR_VAR_vcenter_cluster='$vcenter_cluster'
+    - export PKR_VAR_vcenter_folder='$vcenter_folder'
+    - export PKR_VAR_vcenter_datastore='$vcenter_datastore'
+    - export PKR_VAR_vcenter_network='$vcenter_network'
+    - export PKR_VAR_vcenter_iso_datastore='$vcenter_iso_datastore'
+    - export PKR_VAR_vcenter_content_library='$vcenter_content_library'
+    - export PKR_VAR_root_pem_files='$root_pem_files'
+    - export PKR_VAR_issuing_pem_files='$issuing_pem_files'
+    - export PKR_VAR_build_branch='$CI_COMMIT_REF_NAME'
   script:
     - set -o pipefail
-    - echo "Building $BUILD (branch $CI_COMMIT_REF_NAME, triggered by $CI_PIPELINE_SOURCE)"
+    - echo 'Building $BUILD (branch $CI_COMMIT_REF_NAME, triggered by $CI_PIPELINE_SOURCE)'
     - mkdir -p logs
-    - packer init "$BUILD"
-    - packer build -color=false -timestamp-ui "$BUILD" | tee "logs/$(basename "$BUILD").log"
+    - packer init '$BUILD'
+    - packer build -color=false -timestamp-ui '$BUILD' | tee 'logs/$(basename '$BUILD').log'
   artifacts:
     when: always
     paths:
-      - "logs/*.log"
+      - 'logs/*.log'
     expire_in: 30 days

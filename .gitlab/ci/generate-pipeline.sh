@@ -48,13 +48,17 @@ else
 fi
 
 cat <<'EOF'
-include:
-  - local: '.gitlab/ci/packer-build.yml'
-
 stages:
   - build
 
 EOF
+
+# Inlined rather than pulled in via `include: local:` - dynamic child
+# pipelines (config sourced from a job artifact) have version-dependent
+# rough edges with nested local includes, so the job template is embedded
+# directly to keep the generated pipeline fully self-contained.
+cat .gitlab/ci/packer-build.yml
+echo
 
 if [[ ! -s "$build_list_file" ]]; then
     cat <<'EOF'

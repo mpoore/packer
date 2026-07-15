@@ -40,8 +40,8 @@ build_guestos_keyboard          = ""
 build_guestos_timezone          = ""
 
 # Timeout Settings
-build_ip_timeout                = "15m"
-build_ssh_timeout               = "5m"
+build_ip_timeout                = "5m"
+build_ssh_timeout               = "20m"
 build_shutdown_timeout          = "5m"
 
 # Provisioner Settings

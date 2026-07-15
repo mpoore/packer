@@ -97,14 +97,15 @@
                 </OSImage>
             </ImageInstall>
             <UserData>
+			    <AcceptEula>true</AcceptEula>
                 <ProductKey>
-                    <Key>N69G4-B89J2-4G8F4-WWYCC-J464C</Key>
                     <WillShowUI>OnError</WillShowUI>
+                    <Key>N69G4-B89J2-4G8F4-WWYCC-J464C</Key>
                 </ProductKey>
-                <AcceptEula>true</AcceptEula>
                 <FullName>mpoore</FullName>
                 <Organization>mpoore</Organization>
             </UserData>
+            <EnableFirewall>false</EnableFirewall>
         </component>
     </settings>
     <settings pass="specialize">
@@ -136,28 +137,24 @@
                 <Username>Administrator</Username>
                 <Enabled>true</Enabled>
             </AutoLogon>
-                    <FirstLogonCommands>
+            <FirstLogonCommands>
                 <SynchronousCommand wcm:action="add">
                     <Order>1</Order>
                     <Description>Set Execution Policy 64 Bit</Description>
                     <CommandLine>%SystemRoot%\system32\WindowsPowerShell\v1.0\powershell.exe -Command "Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Force"</CommandLine>
-                    <RequiresUserInput>true</RequiresUserInput>
+                    <RequiresUserInput>false</RequiresUserInput>
                 </SynchronousCommand>
                 <SynchronousCommand wcm:action="add">
                     <Order>2</Order>
                     <Description>Set Execution Policy 32 Bit</Description>
                     <CommandLine>%SystemRoot%\system32\WindowsPowerShell\v1.0\powershell.exe -Command "Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Force"</CommandLine>
-                    <RequiresUserInput>true</RequiresUserInput>
+                    <RequiresUserInput>false</RequiresUserInput>
                 </SynchronousCommand>
                 <SynchronousCommand wcm:action="add">
-                    <CommandLine>cmd.exe /c e:\setup64 /s /v "/qb REBOOT=R"</CommandLine>
-                    <Order>3</Order>
-                    <Description>Install VMware Tools</Description>
-                </SynchronousCommand>
-                <SynchronousCommand wcm:action="add">
-                    <CommandLine>%SystemRoot%\system32\WindowsPowerShell\v1.0\powershell.exe -File a:\initialise.ps1</CommandLine>
+                    <CommandLine>%SystemRoot%\system32\WindowsPowerShell\v1.0\powershell.exe -File F:\setup.ps1</CommandLine>
                     <Description>Basic configuration</Description>
-                    <Order>4</Order>
+                    <Order>3</Order>
+                    <RequiresUserInput>false</RequiresUserInput>
                 </SynchronousCommand>
             </FirstLogonCommands>
             <OOBE>
@@ -174,6 +171,18 @@
                     <Value>${admin_password}</Value>
                     <PlainText>true</PlainText>
                 </AdministratorPassword>
+                <LocalAccounts>
+                    <LocalAccount wcm:action="add">
+                        <Password>
+                            <Value>${build_password}</Value>
+                            <PlainText>true</PlainText>
+                        </Password>
+                        <Group>administrators</Group>
+                        <DisplayName>${build_username}</DisplayName>
+                        <Name>${build_username}</Name>
+                        <Description>Build Account</Description>
+                    </LocalAccount>
+                </LocalAccounts>
             </UserAccounts>
         </component>
     </settings>

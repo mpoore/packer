@@ -86,10 +86,6 @@ source "vsphere-iso" "esx8" {
         disk_size               = var.vm_disk_size
         disk_thin_provisioned   = var.vm_disk_thin
     }
-    storage {
-        disk_size               = 512000
-        disk_thin_provisioned   = var.vm_disk_thin
-    }
     network_adapters {
         network                 = var.vcenter_network
         network_card            = var.vm_nic_type

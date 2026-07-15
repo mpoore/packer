@@ -42,7 +42,7 @@ build_guestos_packages          = []
 
 # Timeout Settings
 build_ip_timeout                = "5m"
-build_ssh_timeout               = "20m"
+build_ssh_timeout               = "25m"
 build_shutdown_timeout          = "5m"
 
 # Provisioner Settings

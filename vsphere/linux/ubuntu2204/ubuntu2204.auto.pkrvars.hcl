@@ -46,5 +46,5 @@ build_ssh_timeout               = "20m"
 build_shutdown_timeout          = "5m"
 
 # Provisioner Settings
-state_tree                      = "salt/states"
-pillar_tree                     = "salt/pillars"
+state_tree                      = "salt/states/linux"
+pillar_tree                     = "salt/pillars/linux"

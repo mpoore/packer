@@ -16,14 +16,14 @@ meta_os_vendor                  = "Ubuntu"
 meta_os_version                 = "22.04.5 LTS"
 
 # VM Hardware Settings
-vm_hardware_version             = 21
+vm_hardware_version             = 22
 vm_firmware                     = "efi"
 vm_cpu_sockets                  = 1
 vm_cpu_cores                    = 1
 vm_mem_size                     = 2048
 vm_nic_type                     = "vmxnet3"
 vm_disk_controller              = ["pvscsi"]
-vm_disk_size                    = 32768
+vm_disk_size                    = 65536
 vm_disk_thin                    = true
 vm_cdrom_type                   = "sata"
 
@@ -40,6 +40,11 @@ build_guestos_keyboard          = "gb"
 build_guestos_timezone          = "UTC"
 build_guestos_packages          = []
 
+# Timeout Settings
+build_ip_timeout                = "5m"
+build_ssh_timeout               = "20m"
+build_shutdown_timeout          = "5m"
+
 # Provisioner Settings
-state_tree                      = "salt/states"
-pillar_tree                     = "salt/pillars"
+state_tree                      = "salt/states/linux"
+pillar_tree                     = "salt/pillars/linux"

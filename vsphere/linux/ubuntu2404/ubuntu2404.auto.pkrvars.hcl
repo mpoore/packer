@@ -16,7 +16,7 @@ meta_os_vendor                  = "Ubuntu"
 meta_os_version                 = "24.04.4 LTS"
 
 # VM Hardware Settings
-vm_hardware_version             = 21
+vm_hardware_version             = 22
 vm_firmware                     = "efi"
 vm_cpu_sockets                  = 1
 vm_cpu_cores                    = 1
@@ -39,6 +39,11 @@ build_guestos_language          = "en_GB"
 build_guestos_keyboard          = "gb"
 build_guestos_timezone          = "UTC"
 build_guestos_packages          = []
+
+# Timeout Settings
+build_ip_timeout                = "5m"
+build_ssh_timeout               = "20m"
+build_shutdown_timeout          = "5m"
 
 # Provisioner Settings
 state_tree                      = "salt/states/linux"

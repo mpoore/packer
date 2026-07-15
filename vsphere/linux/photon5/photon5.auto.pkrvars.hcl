@@ -16,7 +16,7 @@ meta_os_vendor                  = "Photon"
 meta_os_version                 = "5.0"
 
 # VM Hardware Settings
-vm_hardware_version             = 21
+vm_hardware_version             = 22
 vm_firmware                     = "efi"
 vm_cpu_sockets                  = 1
 vm_cpu_cores                    = 1
@@ -38,6 +38,11 @@ build_guestos_type              = "vmwarePhoton64Guest"
 build_guestos_language          = ""
 build_guestos_keyboard          = ""
 build_guestos_timezone          = ""
+
+# Timeout Settings
+build_ip_timeout                = "15m"
+build_ssh_timeout               = "5m"
+build_shutdown_timeout          = "5m"
 
 # Provisioner Settings
 state_tree                      = "salt/states/linux"

@@ -111,6 +111,7 @@ source "vsphere-iso" "centos10" {
     communicator                = "ssh"
     ssh_username                = var.build_username
     ssh_password                = var.build_password
+    ssh_timeout                 = var.build_ssh_timeout
     shutdown_command            = "sudo shutdown -P now"
     shutdown_timeout            = var.build_shutdown_timeout
 }

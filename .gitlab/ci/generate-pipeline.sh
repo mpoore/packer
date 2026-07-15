@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
 # Discovers vsphere/*/* packer build directories and emits a child-pipeline
 # YAML that builds all of them (scheduled pipelines) or only the ones with
-# changed files (push pipelines), spread across a fixed number of
-# resource_group "slots" to cap concurrent packer builds.
+# changed files (push pipelines). Concurrency is capped by the runner, not
+# this script.
 set -euo pipefail
 
-SLOTS=3
 ZERO_SHA="0000000000000000000000000000000000000000"
 
 discover_build_dirs() {
@@ -49,13 +48,17 @@ else
 fi
 
 cat <<'EOF'
-include:
-  - local: '.gitlab/ci/packer-build.yml'
-
 stages:
   - build
 
 EOF
+
+# Inlined rather than pulled in via `include: local:` - dynamic child
+# pipelines (config sourced from a job artifact) have version-dependent
+# rough edges with nested local includes, so the job template is embedded
+# directly to keep the generated pipeline fully self-contained.
+cat .gitlab/ci/packer-build.yml
+echo
 
 if [[ ! -s "$build_list_file" ]]; then
     cat <<'EOF'
@@ -68,15 +71,11 @@ EOF
     exit 0
 fi
 
-index=0
 while read -r dir; do
     name="$(basename "$dir")"
-    slot=$(( (index % SLOTS) + 1 ))
-    index=$(( index + 1 ))
     cat <<EOF
 build:${name}:
   extends: .packer_build
-  resource_group: packer-slot-${slot}
   variables:
     BUILD: "${dir}"
 

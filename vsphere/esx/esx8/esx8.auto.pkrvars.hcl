@@ -17,7 +17,7 @@ meta_os_version                 = "8.0"
 meta_os_subversion              = "u3b"
 
 # VM Hardware Settings
-vm_hardware_version             = 21
+vm_hardware_version             = 22
 vm_firmware                     = "efi"
 vm_cpu_sockets                  = 2
 vm_cpu_cores                    = 1
@@ -40,7 +40,8 @@ build_guestos_timezone          = ""
 
 # Build Settings
 build_ip_timeout                = "10m"
-build_shutdown_timeout          = "1m"
+build_ssh_timeout               = "5m"
+build_shutdown_timeout          = "5m"
 
 # Provisioner Settings
 script_files                    = []

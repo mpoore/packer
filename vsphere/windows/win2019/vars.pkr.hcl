@@ -332,6 +332,11 @@ variable "meta_os_version" {
     description = "The major version of the OS (e.g. '7', '8.5', '2022')"
     default     = "9"
 }
+variable "meta_os_subversion" {
+    type        = string
+    description = "Sub-version, or patch level (e.g. 'U2')"
+    default     = ""
+}
 
 # -------------------------------------------------------------------------- #
 # 8. Build Timeout Settings
@@ -340,12 +345,17 @@ variable "meta_os_version" {
 variable "build_ip_timeout" {
     type        = string
     description = "Set the timeout for the build to obtain an IP address (e.g. '1h5m2s' or '2s')"
-    default     = "30m"
+    default     = "15m"
+}
+variable "build_winrm_timeout" {
+    type        = string
+    description = "Set the timeout for the WINRM communicator to connect (e.g. '1h5m2s' or '2s')"
+    default     = "60m"
 }
 variable "build_shutdown_timeout" {
     type = string
     description = "Set the timeout for the build to shutdown after the shutdown command is issued (e.g. '1h5m2s' or '2s')"
-    default     = "30m"
+    default     = "5m"
 }
 
 # -------------------------------------------------------------------------- #

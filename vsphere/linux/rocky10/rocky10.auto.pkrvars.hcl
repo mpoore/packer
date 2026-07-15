@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# Name:         centos10.auto.pkrvars.hcl
+# Name:         rocky10.auto.pkrvars.hcl
 # Description:  Required vSphere variables for Rocky 10 Packer builds
 # Author:       Michael Poore (@mpoore)
 # URL:          https://github.com/mpoore/packer
@@ -16,14 +16,14 @@ meta_os_vendor                  = "Rocky"
 meta_os_version                 = "10.2"
 
 # VM Hardware Settings
-vm_hardware_version             = 21
+vm_hardware_version             = 22
 vm_firmware                     = "efi"
 vm_cpu_sockets                  = 1
 vm_cpu_cores                    = 1
 vm_mem_size                     = 2048
 vm_nic_type                     = "vmxnet3"
 vm_disk_controller              = ["pvscsi"]
-vm_disk_size                    = 32768
+vm_disk_size                    = 65536
 vm_disk_thin                    = true
 vm_cdrom_type                   = "sata"
 
@@ -38,7 +38,12 @@ build_guestos_type              = "rockylinux_64Guest"
 build_guestos_language          = "en_GB"
 build_guestos_keyboard          = "gb"
 build_guestos_timezone          = "UTC"
-build_guestos_packages          = [ "salt-minion" ]
+build_guestos_packages          = [ "openssl", "salt-3006.23", "salt-minion-3006.23" ]
+
+# Timeout Settings
+build_ip_timeout                = "15m"
+build_ssh_timeout               = "5m"
+build_shutdown_timeout          = "5m"
 
 # Provisioner Settings
 state_tree                      = "salt/states/linux"

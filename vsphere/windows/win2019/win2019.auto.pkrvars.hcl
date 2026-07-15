@@ -40,6 +40,11 @@ build_guestos_keyboard          = "en-GB"
 build_guestos_systemlocale      = "en-US"
 build_guestos_timezone          = "GMT Standard Time"
 
+# Timeout Settings
+build_ip_timeout                = "60m"
+build_winrm_timeout             = "60m"
+build_shutdown_timeout          = "120m"
+
 # Provisioner Settings
 script_files                    = [ "scripts/windows/common/hibernation.ps1",
                                     "scripts/windows/common/administrator.ps1",

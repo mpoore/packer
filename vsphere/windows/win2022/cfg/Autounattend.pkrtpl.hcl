@@ -145,23 +145,19 @@
                     <Order>1</Order>
                     <Description>Set Execution Policy 64 Bit</Description>
                     <CommandLine>%SystemRoot%\system32\WindowsPowerShell\v1.0\powershell.exe -Command "Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Force"</CommandLine>
-                    <RequiresUserInput>true</RequiresUserInput>
+                    <RequiresUserInput>false</RequiresUserInput>
                 </SynchronousCommand>
                 <SynchronousCommand wcm:action="add">
                     <Order>2</Order>
                     <Description>Set Execution Policy 32 Bit</Description>
                     <CommandLine>%SystemRoot%\system32\WindowsPowerShell\v1.0\powershell.exe -Command "Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Force"</CommandLine>
-                    <RequiresUserInput>true</RequiresUserInput>
+                    <RequiresUserInput>false</RequiresUserInput>
                 </SynchronousCommand>
                 <SynchronousCommand wcm:action="add">
-                    <CommandLine>cmd.exe /c e:\setup.exe /s /v "/qb REBOOT=R"</CommandLine>
-                    <Order>3</Order>
-                    <Description>Install VMware Tools</Description>
-                </SynchronousCommand>
-                <SynchronousCommand wcm:action="add">
-                    <CommandLine>%SystemRoot%\system32\WindowsPowerShell\v1.0\powershell.exe -File a:\initialise.ps1</CommandLine>
+                    <CommandLine>%SystemRoot%\system32\WindowsPowerShell\v1.0\powershell.exe -File F:\setup.ps1</CommandLine>
                     <Description>Basic configuration</Description>
-                    <Order>4</Order>
+                    <Order>3</Order>
+                    <RequiresUserInput>false</RequiresUserInput>
                 </SynchronousCommand>
             </FirstLogonCommands>
             <OOBE>

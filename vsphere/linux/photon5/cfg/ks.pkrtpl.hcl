@@ -59,6 +59,7 @@
     ],
     "postinstall": [
         "#!/bin/sh",
+        "tdnf update -y",
         "useradd -m -G sudo ${build_username}",
         "echo \"${build_username}:${build_password}\" | chpasswd",
         "echo \"${build_username}  ALL=(ALL)  NOPASSWD:SETENV: ALL\" >> /etc/sudoers.d/${build_username}",
@@ -69,6 +70,7 @@
         "iptables -A OUTPUT -p ICMP -j ACCEPT",
         "iptables-save > /etc/systemd/scripts/ip4save",
         "systemctl restart iptables",
+        "ssh-keygen -A",
         "sed -i 's/PermitRootLogin no/PermitRootLogin yes/g' /etc/ssh/sshd_config",
         "systemctl restart sshd.service",
         "curl -fsSL https://github.com/saltstack/salt-install-guide/releases/latest/download/salt.repo | tee /etc/yum.repos.d/salt.repo",

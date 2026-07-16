@@ -56,6 +56,7 @@ Supporting directories:
 
 - [`salt/`](salt/) — the Salt state tree and pillar data applied by every build's `salt` provisioner.
 - [`scripts/`](scripts/) — helper shell/PowerShell scripts used by specific builds (e.g. ESXi and Windows).
+- [`scripts/winupdate-sync/`](scripts/winupdate-sync/) — CI-scheduled tool that syncs an offline repository of Windows Server Cumulative/Servicing Stack Updates to NFS-backed storage, pruning anything outside the configured retention window (see [`sync_windows_updates`](.gitlab-ci.yml) job).
 - [`manifests/`](manifests/) — output location for Packer manifest files produced by each build.
 - [`logs/`](logs/) — output location for build logs when logging is enabled (see below).
 

@@ -1,5 +1,6 @@
 workflow:
   rules:
+    - if: $CI_PIPELINE_SOURCE == 'schedule' && $CI_COMMIT_REF_NAME == 'main' && $SYNC_WINDOWS_UPDATES == 'true'
     - if: $CI_PIPELINE_SOURCE == 'schedule' && $CI_COMMIT_REF_NAME == 'main'
     - if: $CI_PIPELINE_SOURCE == 'push' && ($CI_COMMIT_REF_NAME == 'main' || $CI_COMMIT_REF_NAME == 'dev')
     - when: never
@@ -7,6 +8,7 @@ workflow:
 stages:
   - generate
   - build
+  - sync
 
 # Discovers the current vsphere/*/* packer build directories and decides
 # which ones to build: all of them for scheduled (main) pipelines, or only
@@ -16,6 +18,8 @@ stages:
 generate_pipeline:
   stage: generate
   image: mpoore/packer-ci:latest
+  rules:
+    - if: $SYNC_WINDOWS_UPDATES != 'true'
   script:
     - .gitlab/ci/generate-pipeline.sh > generated-pipeline.yml
     - cat generated-pipeline.yml
@@ -26,8 +30,30 @@ generate_pipeline:
 
 run_builds:
   stage: build
+  rules:
+    - if: $SYNC_WINDOWS_UPDATES != 'true'
   trigger:
     include:
       - artifact: generated-pipeline.yml
         job: generate_pipeline
     strategy: depend
+
+# Syncs the offline Windows Update repository (scripts/winupdate-sync/) on
+# its own schedule, separate from the packer build schedule. Triggered by a
+# dedicated GitLab Pipeline Schedule with SYNC_WINDOWS_UPDATES=true set.
+sync_windows_updates:
+  stage: sync
+  image: mcr.microsoft.com/powershell:latest
+  rules:
+    - if: $SYNC_WINDOWS_UPDATES == 'true'
+  before_script:
+    - apt-get update -qq && apt-get install -y -qq rsync openssh-client
+    - mkdir -p ~/.ssh && chmod 700 ~/.ssh
+    - echo "$winupdate_ssh_private_key" > ~/.ssh/id_ed25519 && chmod 600 ~/.ssh/id_ed25519
+    - echo "$winupdate_ssh_known_hosts" > ~/.ssh/known_hosts
+  script:
+    - pwsh -File scripts/winupdate-sync/sync.ps1
+  variables:
+    WINUPDATE_REPO_HOST: $winupdate_repo_host
+    WINUPDATE_REPO_USER: $winupdate_repo_user
+    WINUPDATE_REPO_PATH: $winupdate_repo_path

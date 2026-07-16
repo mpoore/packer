@@ -92,6 +92,24 @@ function Wait-ForNetworkProfile {
 try {
     Write-Log "===== setup.ps1 started ====="
 
+    ### --- VMware Tools Installation --- ###
+    $vmwareToolsPath = "E:\setup.exe"
+    if (Test-Path $vmwareToolsPath) {
+        Write-Log "Installing VMware Tools from $vmwareToolsPath ..."
+        try {
+            Start-Process -FilePath $vmwareToolsPath `
+                -ArgumentList '/S /v"/qn REBOOT=ReallySuppress" /l c:\windows\temp\vmware_tools_install.log' `
+                -Wait -NoNewWindow
+            Write-Log "VMware Tools installation completed."
+        }
+        catch {
+            Write-LogException -Context "VMware Tools installation failed. Continuing build..." -ErrorRecord $_
+        }
+    }
+    else {
+        Write-Log -Level WARNING "VMware Tools installer not found at $vmwareToolsPath. Skipping installation."
+    }
+
     ### --- Network Configuration --- ###
     Write-Log "Configuring network profile..."
     try {
@@ -123,24 +141,6 @@ try {
     Write-Log "Installing Windows Updates..."
     Get-WindowsUpdate -MicrosoftUpdate -Install -IgnoreUserInput -AcceptAll -IgnoreReboot | Out-File -FilePath 'C:\windowsupdate.log' -Append
     Write-Log "Windows Updates installed. (Reboot will be forced at end of script)"#>
-
-    ### --- VMware Tools Installation --- ###
-    $vmwareToolsPath = "E:\setup.exe"
-    if (Test-Path $vmwareToolsPath) {
-        Write-Log "Installing VMware Tools from $vmwareToolsPath ..."
-        try {
-            Start-Process -FilePath $vmwareToolsPath `
-                -ArgumentList '/S /v"/qn REBOOT=ReallySuppress" /l c:\windows\temp\vmware_tools_install.log' `
-                -Wait -NoNewWindow
-            Write-Log "VMware Tools installation completed."
-        }
-        catch {
-            Write-LogException -Context "VMware Tools installation failed. Continuing build..." -ErrorRecord $_
-        }
-    }
-    else {
-        Write-Log -Level WARNING "VMware Tools installer not found at $vmwareToolsPath. Skipping installation."
-    }
 
     ### --- Salt Minion Installation --- ###
     $bootstrapUrl  = "https://raw.githubusercontent.com/saltstack/salt-bootstrap/develop/bootstrap-salt.ps1"

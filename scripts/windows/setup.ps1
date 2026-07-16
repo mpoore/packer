@@ -13,46 +13,65 @@
     Name:         scripts/windows/setup.ps1
     Author:       Michael Poore (@mpoore)
     URL:          https://github.com/mpoore/packer
+
+    Log:          C:\Windows\Temp\packer-setup.log
 #>
 
 $ErrorActionPreference = "Stop"
 
+### --- Logging --- ###
+$LogFile = "C:\Windows\Temp\packer-setup.log"
+
+function Write-Log {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Message,
+
+        [ValidateSet("INFO", "WARNING", "ERROR")]
+        [string]$Level = "INFO"
+    )
+    $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    Add-Content -Path $LogFile -Value "[$timestamp] [$Level] $Message"
+}
+
+Write-Log "===== setup.ps1 started ====="
+
 ### --- Network Configuration --- ###
-Write-Host "Configuring network profile..."
+Write-Log "Configuring network profile..."
 $profile = Get-NetConnectionProfile
 while ($profile.Name -eq "Identifying...") {
-    Write-Host "Network still identifying... waiting 10 seconds."
+    Write-Log "Network still identifying... waiting 10 seconds."
     Start-Sleep -Seconds 10
     $profile = Get-NetConnectionProfile
 }
 Set-NetConnectionProfile -Name $profile.Name -NetworkCategory Private
-Write-Host "Network profile set to Private."
+Write-Log "Network profile set to Private."
 
 ### --- Windows Update --- ###
-Write-Host "Installing PSWindowsUpdate module..."
+<#Write-Log "Installing PSWindowsUpdate module..."
 Get-PackageProvider -Name nuget -Force | Out-Null
 Install-Module PSWindowsUpdate -Confirm:$false -Force
 
-Write-Host "Installing Windows Updates..."
+Write-Log "Installing Windows Updates..."
 Get-WindowsUpdate -MicrosoftUpdate -Install -IgnoreUserInput -AcceptAll -IgnoreReboot | Out-File -FilePath 'C:\windowsupdate.log' -Append
-Write-Host "Windows Updates installed. (Reboot will be forced at end of script)"
+Write-Log "Windows Updates installed. (Reboot will be forced at end of script)"#>
 
 ### --- VMware Tools Installation --- ###
 $vmwareToolsPath = "E:\setup.exe"
 if (Test-Path $vmwareToolsPath) {
-    Write-Host "Installing VMware Tools from $vmwareToolsPath ..."
+    Write-Log "Installing VMware Tools from $vmwareToolsPath ..."
     try {
         Start-Process -FilePath $vmwareToolsPath `
             -ArgumentList '/S /v"/qn REBOOT=ReallySuppress" /l c:\windows\temp\vmware_tools_install.log' `
             -Wait -NoNewWindow
-        Write-Host "VMware Tools installation completed."
+        Write-Log "VMware Tools installation completed."
     }
     catch {
-        Write-Warning "VMware Tools installation failed: $_. Continuing build..."
+        Write-Log -Level WARNING "VMware Tools installation failed: $_. Continuing build..."
     }
 }
 else {
-    Write-Warning "VMware Tools installer not found at $vmwareToolsPath. Skipping installation."
+    Write-Log -Level WARNING "VMware Tools installer not found at $vmwareToolsPath. Skipping installation."
 }
 
 ### --- Salt Minion Installation --- ###
@@ -65,20 +84,20 @@ if (-not (Test-Path -Path "C:\install")) {
 
 try {
     Invoke-WebRequest -Uri $bootstrapUrl -OutFile $bootstrapPath -UseBasicParsing
-    Write-Host "Downloaded bootstrap-salt.ps1 to $bootstrapPath"
+    Write-Log "Downloaded bootstrap-salt.ps1 to $bootstrapPath"
 }
 catch {
-    Write-Error "Failed to download bootstrap-salt.ps1: $_"
+    Write-Log -Level ERROR "Failed to download bootstrap-salt.ps1: $_"
     exit 1
 }
 
 try {
-    Write-Host "Executing bootstrap-salt.ps1..."
+    Write-Log "Executing bootstrap-salt.ps1..."
     powershell.exe -ExecutionPolicy Bypass -File $bootstrapPath
-    Write-Host "Salt bootstrap script completed."
+    Write-Log "Salt bootstrap script completed."
 }
 catch {
-    Write-Error "Failed to execute bootstrap-salt.ps1: $_"
+    Write-Log -Level ERROR "Failed to execute bootstrap-salt.ps1: $_"
     exit 1
 }
 
@@ -115,24 +134,26 @@ catch {
 #                    -Action Allow
 
 ### --- WinRM Configuration --- ###
-Write-Host "Configuring WinRM..."
+Write-Log "Configuring WinRM..."
 try {
     winrm quickconfig -quiet
     winrm set winrm/config/service '@{AllowUnencrypted="true"}'
     winrm set winrm/config/service/auth '@{Basic="true"}'
-    Write-Host "WinRM configuration completed."
+    Write-Log "WinRM configuration completed."
 }
 catch {
-    Write-Warning "WinRM configuration failed: $_. Continuing build..."
+    Write-Log -Level WARNING "WinRM configuration failed: $_. Continuing build..."
 }
 
 ### --- Firewall Rules --- ###
-Write-Host "Enabling Windows Remote Management in Firewall..."
+Write-Log "Enabling Windows Remote Management in Firewall..."
 try {
     netsh advfirewall firewall set rule group="Windows Remote Administration" new enable=yes
     netsh advfirewall firewall set rule name="Windows Remote Management (HTTP-In)" new enable=yes action=allow
-    Write-Host "Firewall rules applied."
+    Write-Log "Firewall rules applied."
 }
 catch {
-    Write-Warning "Failed to configure firewall rules: $_. Continuing build..."
+    Write-Log -Level WARNING "Failed to configure firewall rules: $_. Continuing build..."
 }
+
+Write-Log "===== setup.ps1 completed ====="

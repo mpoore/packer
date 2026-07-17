@@ -39,7 +39,7 @@ build_guestos_keyboard          = "United Kingdom"
 build_guestos_timezone          = ""
 
 # Build Settings
-build_ip_timeout                = "10m"
+build_ip_timeout                = "30m"
 build_ssh_timeout               = "5m"
 build_shutdown_timeout          = "5m"
 

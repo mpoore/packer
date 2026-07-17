@@ -15,9 +15,9 @@ packer {
             version = ">= 2.2.0"
             source  = "github.com/hashicorp/vsphere"
         }
-        windows-update = {
-            version = ">= 0.18.4"
-            source  = "github.com/rgl/windows-update"
+        salt = {
+            version = ">= 0.5.7"
+            source  = "github.com/mpoore/salt"
         }
     }
 }
@@ -30,9 +30,11 @@ locals {
     is_release_branch           = contains(["main", "dev"], var.build_branch)
     build_version               = formatdate("YY.MM-DD", timestamp())
     build_date                  = formatdate("YYYY-MM-DD hh:mm ZZZ", timestamp())
-    core_floppy_content         = {
+    core_autounattend           = {
                                     "Autounattend.xml" = templatefile("${abspath(path.root)}/cfg/Autounattend.pkrtpl.hcl", {
                                         admin_password              = var.admin_password
+                                        build_username              = var.build_username
+                                        build_password              = var.build_password
                                         build_guestos_language      = var.build_guestos_language
                                         build_guestos_systemlocale  = var.build_guestos_systemlocale
                                         build_guestos_keyboard      = var.build_guestos_keyboard
@@ -40,9 +42,11 @@ locals {
                                         build_windows_image         = "SERVERSTANDARDCORE"
                                     })
                                   }
-    dexp_floppy_content         = {
+    dexp_autounattend           = {
                                     "Autounattend.xml" = templatefile("${abspath(path.root)}/cfg/Autounattend.pkrtpl.hcl", {
                                         admin_password              = var.admin_password
+                                        build_username              = var.build_username
+                                        build_password              = var.build_password
                                         build_guestos_language      = var.build_guestos_language
                                         build_guestos_systemlocale  = var.build_guestos_systemlocale
                                         build_guestos_keyboard      = var.build_guestos_keyboard
@@ -107,8 +111,8 @@ source "vsphere-iso" "win2019stddexp" {
 
     # Removeable Media
     iso_paths                   = [ "[${ var.vcenter_iso_datastore }] ${ var.os_iso_path }/${ var.os_iso_file }", "[] /vmimages/tools-isoimages/windows.iso" ]
-    floppy_files                = [ "scripts/windows/common/initialise.ps1" ]
-    floppy_content              = local.dexp_floppy_content
+    cd_files                    = [ "scripts/windows/" ]
+    cd_content                  = local.dexp_autounattend
 
     # Boot and Provisioner
     boot_order                  = var.vm_boot_order
@@ -174,8 +178,8 @@ source "vsphere-iso" "win2019stdcore" {
 
     # Removeable Media
     iso_paths                   = [ "[${ var.vcenter_iso_datastore }] ${ var.os_iso_path }/${ var.os_iso_file }", "[] /vmimages/tools-isoimages/windows.iso" ]
-    floppy_files                = [ "scripts/windows/common/initialise.ps1" ]
-    floppy_content              = local.core_floppy_content
+    cd_files                    = [ "scripts/windows/" ]
+    cd_content                  = local.core_autounattend
 
     # Boot and Provisioner
     boot_order                  = var.vm_boot_order
@@ -198,37 +202,11 @@ build {
     sources                 = [ "source.vsphere-iso.win2019stddexp",
                                 "source.vsphere-iso.win2019stdcore" ]
     
-    # Windows Update using https://github.com/rgl/packer-provisioner-windows-update
-    provisioner "windows-update" {
-        pause_before        = "30s"
-        search_criteria     = "IsInstalled=0"
-        filters             = [ "exclude:$_.Title -like '*VMware*'",
-                                "exclude:$_.Title -like '*Preview*'",
-                                "exclude:$_.Title -like '*Defender*'",
-                                "exclude:$_.InstallationBehavior.CanRequestUserInput",
-                                "include:$true" ]
-        restart_timeout     = "120m"
-    }      
-    
-    # PowerShell Provisioner to execute scripts 
-    provisioner "powershell" {
-        elevated_user       = var.admin_username
-        elevated_password   = var.admin_password
-        scripts             = var.script_files
-        environment_vars    = [ "PKISERVER=${ var.build_pkiserver }",
-                                "ANSIBLEUSER=${ var.build_configmgmt_user }",
-                                "ANSIBLEKEY=${ var.build_configmgmt_key }",
-                                "BUILDUSER=${ var.build_username }",
-                                "BUILDPASS=${ var.build_password }",
-                                "ROOTPEMFILES=${ var.root_pem_files }",
-                                "ISSUINGPEMFILES=${ var.issuing_pem_files }" ]
-    }
-
-    # PowerShell Provisioner to execute commands
-    provisioner "powershell" {
-        elevated_user       = var.admin_username
-        elevated_password   = var.admin_password
-        inline              = var.inline_cmds
+    # Salt State provisioning
+    provisioner "salt" {
+        state_tree          = var.state_tree
+        pillar_tree         = var.pillar_tree
+        environment_vars    = [ "BUILDVERSION=${ local.build_version }", "BUILDDATE=${ local.build_date }", "BUILDBRANCH=${ var.build_branch }" ]
     }
 
     post-processor "manifest" {

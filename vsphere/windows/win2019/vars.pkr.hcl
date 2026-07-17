@@ -307,6 +307,11 @@ variable "build_guestos_systemlocale" {
     description = "The language that the guest OS will be configured with"
     default     = "en-US"
 }
+variable "build_guestos_packages" {
+    type        = list(string)
+    description = "Additional OS packages to be installed"
+    default     = []
+}
 
 # -------------------------------------------------------------------------- #
 # 7. OS Meta Data
@@ -371,6 +376,21 @@ variable "inline_cmds" {
     type        = list(string)
     description = "List of OS commands to execute"
     default     = []
+}
+variable "state_files" {
+    type        = list(string)
+    description = "List of Salt States to apply"
+    default     = []
+}
+variable "state_tree" {
+    type        = string
+    description = "A directory containing an entire Salt State Tree (including top.sls)"
+    default     = ""
+}
+variable "pillar_tree" {
+    type        = string
+    description = "A directory containing an entire Salt Pillar Tree"
+    default     = ""
 }
 variable "root_pem_files" {
     type        = string

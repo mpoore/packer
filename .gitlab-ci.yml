@@ -57,3 +57,5 @@ sync_windows_updates:
     WINUPDATE_REPO_HOST: $winupdate_repo_host
     WINUPDATE_REPO_USER: $winupdate_repo_user
     WINUPDATE_REPO_PATH: $winupdate_repo_path
+    # TEMPORARY: diagnosing the rsync "Permission denied" failures. Remove once resolved.
+    WINUPDATE_SSH_DEBUG: "true"

@@ -32,6 +32,12 @@ if (-not $repoHost -or -not $repoUser -or -not $repoPath) {
 }
 $remote = "$repoUser@$repoHost"
 
+# Set WINUPDATE_SSH_DEBUG=true to get verbose ssh/rsync auth negotiation output
+# in the job log while diagnosing a connection problem.
+$sshDebug = $env:WINUPDATE_SSH_DEBUG -eq 'true'
+$sshArgs = if ($sshDebug) { @('-v') } else { @() }
+$rsyncRsh = if ($sshDebug) { 'ssh -v' } else { 'ssh' }
+
 $stagingRoot = Join-Path ([System.IO.Path]::GetTempPath()) "winupdate-staging"
 if (Test-Path $stagingRoot) { Remove-Item $stagingRoot -Recurse -Force }
 New-Item -ItemType Directory -Path $stagingRoot | Out-Null
@@ -83,7 +89,12 @@ function Get-DesiredUpdates {
 }
 
 function Get-RemoteManifest {
-    $json = & ssh $remote "cat '$repoPath/manifest.json' 2>/dev/null" 2>$null
+    if ($sshDebug) {
+        $json = & ssh @sshArgs $remote "cat '$repoPath/manifest.json' 2>/dev/null"
+    }
+    else {
+        $json = & ssh $remote "cat '$repoPath/manifest.json' 2>/dev/null" 2>$null
+    }
     if (-not $json) { return @() }
     return $json | ConvertFrom-Json
 }
@@ -95,7 +106,7 @@ function Remove-RemoteFiles {
     $script = ($RelativePaths | ForEach-Object {
         "rm -rf -- '$repoPath/$_'"
     }) -join "`n"
-    $script | & ssh $remote "bash -s"
+    $script | & ssh @sshArgs $remote "bash -s"
     if ($LASTEXITCODE -ne 0) { throw "Failed to remove obsolete remote files (exit $LASTEXITCODE)." }
 }
 
@@ -103,7 +114,7 @@ function Push-Manifest {
     param([object[]]$Entries)
     $manifestPath = Join-Path $stagingRoot "manifest.json"
     $Entries | ConvertTo-Json -Depth 5 | Set-Content -Path $manifestPath
-    & rsync -avz -e ssh $manifestPath "${remote}:$repoPath/manifest.json"
+    & rsync -avz -e $rsyncRsh $manifestPath "${remote}:$repoPath/manifest.json"
     if ($LASTEXITCODE -ne 0) { throw "rsync of manifest.json failed (exit $LASTEXITCODE)." }
 }
 
@@ -156,7 +167,7 @@ foreach ($item in $toDownload) {
         Write-Host "Downloading $($item.Kb) ($($item.Product)/$($item.Kind))..."
         Save-MSCatalogUpdate -Guid $item.Guid -Destination $itemDir -DownloadAll
 
-        & rsync -avz -e ssh "$itemDir/" "${remote}:$repoPath/$($item.RelativePath)/"
+        & rsync -avz -e $rsyncRsh "$itemDir/" "${remote}:$repoPath/$($item.RelativePath)/"
         if ($LASTEXITCODE -ne 0) { throw "rsync push failed for $($item.Kb) (exit $LASTEXITCODE)." }
 
         $confirmed.Add($item)

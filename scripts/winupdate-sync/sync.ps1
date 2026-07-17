@@ -73,7 +73,9 @@ function Get-DesiredUpdates {
                 Title       = $u.Title
                 Guid        = $u.Guid
                 LastUpdated = $u.LastUpdated
-                RelativePath = "$($ProductConfig.Name)/$($ProductConfig.Arch)/${kind}_${kb}.msu"
+                # A directory, not a single file: -DownloadAll can pull down more
+                # than one file for a single update (e.g. a prerequisite package).
+                RelativePath = "$($ProductConfig.Name)/$($ProductConfig.Arch)/${kind}_${kb}"
             })
         }
     }
@@ -91,16 +93,18 @@ function Remove-RemoteFiles {
     if ($RelativePaths.Count -eq 0) { return }
 
     $script = ($RelativePaths | ForEach-Object {
-        "rm -f -- '$repoPath/$_'"
+        "rm -rf -- '$repoPath/$_'"
     }) -join "`n"
     $script | & ssh $remote "bash -s"
     if ($LASTEXITCODE -ne 0) { throw "Failed to remove obsolete remote files (exit $LASTEXITCODE)." }
 }
 
-function Push-Staging {
-    param([string]$LocalDir)
-    & rsync -avz -e ssh "$LocalDir/" "${remote}:$repoPath/"
-    if ($LASTEXITCODE -ne 0) { throw "rsync push failed (exit $LASTEXITCODE)." }
+function Push-Manifest {
+    param([object[]]$Entries)
+    $manifestPath = Join-Path $stagingRoot "manifest.json"
+    $Entries | ConvertTo-Json -Depth 5 | Set-Content -Path $manifestPath
+    & rsync -avz -e ssh $manifestPath "${remote}:$repoPath/manifest.json"
+    if ($LASTEXITCODE -ne 0) { throw "rsync of manifest.json failed (exit $LASTEXITCODE)." }
 }
 
 ### --- Build desired set --- ###
@@ -122,27 +126,49 @@ $toDelete = $remoteManifest | Where-Object { -not $desiredByPath.ContainsKey($_.
 
 Write-Host "Desired: $($desired.Count)  Already present: $($desired.Count - $toDownload.Count)  New: $($toDownload.Count)  Obsolete: $($toDelete.Count)"
 
-### --- Download new updates --- ###
-foreach ($item in $toDownload) {
-    $destDir = Join-Path $stagingRoot (Split-Path $item.RelativePath -Parent)
-    New-Item -ItemType Directory -Path $destDir -Force | Out-Null
-    Write-Host "Downloading $($item.Kb) ($($item.Product)/$($item.Kind))..."
-    $updateObj = Get-MSCatalogUpdate -Search $item.Title -Strict
-    Save-MSCatalogUpdate -Update $updateObj -Destination $destDir -DownloadAll
+# `$confirmed` tracks what the remote manifest should say is actually present.
+# It's updated and pushed after every step below, so a mid-run failure (crashed
+# pod, network blip, resource limit) leaves the remote manifest matching remote
+# reality — the next run's diff picks up exactly where this one left off,
+# instead of re-downloading everything from scratch.
+$confirmed = [System.Collections.Generic.List[object]]::new()
+$deletePaths = $toDelete | Select-Object -ExpandProperty RelativePath
+foreach ($entry in $remoteManifest) {
+    if ($entry.RelativePath -notin $deletePaths) { $confirmed.Add($entry) }
 }
 
-### --- Push new files, then prune obsolete ones --- ###
-if ($toDownload.Count -gt 0) {
-    Push-Staging -LocalDir $stagingRoot
-}
+### --- Prune obsolete files first, so it isn't skipped if downloads fail --- ###
 if ($toDelete.Count -gt 0) {
-    Remove-RemoteFiles -RelativePaths ($toDelete | Select-Object -ExpandProperty RelativePath)
+    Write-Host "Pruning $($toDelete.Count) obsolete file(s)..."
+    Remove-RemoteFiles -RelativePaths $deletePaths
+    Push-Manifest -Entries $confirmed
 }
 
-### --- Write and push updated manifest --- ###
-$manifestPath = Join-Path $stagingRoot "manifest.json"
-$desired | ConvertTo-Json -Depth 5 | Set-Content -Path $manifestPath
-& rsync -avz -e ssh $manifestPath "${remote}:$repoPath/manifest.json"
-if ($LASTEXITCODE -ne 0) { throw "rsync of manifest.json failed (exit $LASTEXITCODE)." }
+### --- Download and push new updates one at a time --- ###
+# Each item is downloaded, pushed and dropped from local disk before moving to
+# the next, so peak local (ephemeral) storage use is one update's files, not
+# the whole batch — and a bad/unavailable item doesn't block the rest.
+$downloaded = 0
+foreach ($item in $toDownload) {
+    $itemDir = Join-Path $stagingRoot $item.RelativePath
+    New-Item -ItemType Directory -Path $itemDir -Force | Out-Null
+    try {
+        Write-Host "Downloading $($item.Kb) ($($item.Product)/$($item.Kind))..."
+        Save-MSCatalogUpdate -Guid $item.Guid -Destination $itemDir -DownloadAll
 
-Write-Host "Sync complete: $($toDownload.Count) downloaded, $($toDelete.Count) pruned, $($desired.Count - $toDownload.Count) unchanged."
+        & rsync -avz -e ssh "$itemDir/" "${remote}:$repoPath/$($item.RelativePath)/"
+        if ($LASTEXITCODE -ne 0) { throw "rsync push failed for $($item.Kb) (exit $LASTEXITCODE)." }
+
+        $confirmed.Add($item)
+        Push-Manifest -Entries $confirmed
+        $downloaded++
+    }
+    catch {
+        Write-Warning "Skipping $($item.Kb) ($($item.Product)/$($item.Kind)): $_"
+    }
+    finally {
+        Remove-Item $itemDir -Recurse -Force -ErrorAction SilentlyContinue
+    }
+}
+
+Write-Host "Sync complete: $downloaded downloaded, $($toDelete.Count) pruned, $($desired.Count - $toDownload.Count) unchanged."

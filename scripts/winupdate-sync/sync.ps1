@@ -172,6 +172,7 @@ foreach ($item in $toDownload) {
     try {
         Write-Host "Downloading $($item.Kb) ($($item.Product)/$($item.Kind))..."
         Save-MSCatalogUpdate -Guid $item.Guid -Destination $itemDir -DownloadAll
+        $item | Add-Member -NotePropertyName Files -NotePropertyValue @((Get-ChildItem $itemDir -File).Name)
 
         # rsync only creates the final path component on the remote side, not
         # the full chain of missing parents, so create it explicitly first.

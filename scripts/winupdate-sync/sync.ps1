@@ -110,6 +110,12 @@ function Remove-RemoteFiles {
     if ($LASTEXITCODE -ne 0) { throw "Failed to remove obsolete remote files (exit $LASTEXITCODE)." }
 }
 
+function New-RemoteDirectory {
+    param([string]$RelativePath)
+    & ssh @sshArgs $remote "mkdir -p -- '$repoPath/$RelativePath'"
+    if ($LASTEXITCODE -ne 0) { throw "Failed to create remote directory $RelativePath (exit $LASTEXITCODE)." }
+}
+
 function Push-Manifest {
     param([object[]]$Entries)
     $manifestPath = Join-Path $stagingRoot "manifest.json"
@@ -166,6 +172,10 @@ foreach ($item in $toDownload) {
     try {
         Write-Host "Downloading $($item.Kb) ($($item.Product)/$($item.Kind))..."
         Save-MSCatalogUpdate -Guid $item.Guid -Destination $itemDir -DownloadAll
+
+        # rsync only creates the final path component on the remote side, not
+        # the full chain of missing parents, so create it explicitly first.
+        New-RemoteDirectory -RelativePath $item.RelativePath
 
         & rsync -avz -e $rsyncRsh "$itemDir/" "${remote}:$repoPath/$($item.RelativePath)/"
         if ($LASTEXITCODE -ne 0) { throw "rsync push failed for $($item.Kb) (exit $LASTEXITCODE)." }

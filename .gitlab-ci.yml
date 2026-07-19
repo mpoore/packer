@@ -37,6 +37,17 @@ run_builds:
       - artifact: generated-pipeline.yml
         job: generate_pipeline
     strategy: depend
+  # Workaround for an intermittent GitLab Workhorse/MinIO race: the
+  # read-back that builds the artifact's metadata.gz right after upload
+  # occasionally fails and is swallowed, leaving a corrupt 0-byte
+  # metadata.gz that this job's `include: artifact:` then chokes on,
+  # surfaced as a generic "Undefined error" (failure_reason:
+  # unknown_failure). Deliberately not `always` - a real failure inside
+  # the downstream build pipeline gets a different, specific
+  # failure_reason and should NOT trigger a full re-run of every build.
+  retry:
+    max: 2
+    when: unknown_failure
 
 # Syncs the offline Windows Update repository (scripts/winupdate-sync/) on
 # its own schedule, separate from the packer build schedule. Triggered by a

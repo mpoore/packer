@@ -422,3 +422,13 @@ variable "build_pkiserver" {
     description = "Base URL for acquiring SSL certificates"
     default     = ""
 }
+variable "winupdate_source" {
+    type        = string
+    description = "Base URL of the offline Windows Update repository (e.g. http://winupdate.example.com). Empty means use online Windows Update."
+    default     = ""
+}
+variable "skip_windows_update" {
+    type        = bool
+    description = "Skip Windows Update entirely during provisioning"
+    default     = false
+}

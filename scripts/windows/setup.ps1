@@ -17,6 +17,12 @@
     Log:          C:\Windows\Temp\packer-setup.log
 #>
 
+param(
+    [string]$OfflineUpdateSource = '',
+    [string]$OfflineUpdateProduct = '',
+    [switch]$SkipWindowsUpdate
+)
+
 $ErrorActionPreference = "Stop"
 
 ### --- Logging --- ###
@@ -89,6 +95,47 @@ function Wait-ForNetworkProfile {
     }
 }
 
+function Install-OfflineWindowsUpdates {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Source,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Product
+    )
+
+    $manifest = Invoke-RestMethod -Uri "$Source/manifest.json" -UseBasicParsing
+
+    # Latest release per Kind only - the manifest can hold a retention
+    # window of several months, we only want what's current.
+    $entries = $manifest | Where-Object { $_.Product -eq $Product } |
+        Group-Object Kind | ForEach-Object { $_.Group | Sort-Object LastUpdated -Descending | Select-Object -First 1 }
+
+    # SSU before LCU, per Microsoft guidance.
+    $ordered = $entries | Sort-Object { if ($_.Kind -eq 'Ssu') { 0 } else { 1 } }
+
+    $downloadDir = "C:\Windows\Temp\winupdate-offline"
+    New-Item -ItemType Directory -Path $downloadDir -Force | Out-Null
+
+    foreach ($entry in $ordered) {
+        if (-not $entry.Files -or $entry.Files.Count -eq 0) {
+            Write-Log -Level WARNING "No file list for $($entry.Kb) ($($entry.Kind)); skipping."
+            continue
+        }
+        foreach ($file in $entry.Files) {
+            $dest = Join-Path $downloadDir $file
+            Write-Log "Downloading $($entry.Kb): $file ..."
+            Invoke-WebRequest -Uri "$Source/$($entry.RelativePath)/$file" -OutFile $dest -UseBasicParsing
+
+            Write-Log "Installing $file ..."
+            $proc = Start-Process -FilePath "wusa.exe" -ArgumentList "`"$dest`" /quiet /norestart" -Wait -PassThru
+            if ($proc.ExitCode -notin @(0, 3010)) {
+                Write-Log -Level WARNING "wusa.exe exited $($proc.ExitCode) installing $file (may already be installed)."
+            }
+        }
+    }
+}
+
 try {
     Write-Log "===== setup.ps1 started ====="
 
@@ -134,13 +181,32 @@ try {
     }
 
     ### --- Windows Update --- ###
-    <#Write-Log "Installing PSWindowsUpdate module..."
-    Get-PackageProvider -Name nuget -Force | Out-Null
-    Install-Module PSWindowsUpdate -Confirm:$false -Force
-
-    Write-Log "Installing Windows Updates..."
-    Get-WindowsUpdate -MicrosoftUpdate -Install -IgnoreUserInput -AcceptAll -IgnoreReboot | Out-File -FilePath 'C:\windowsupdate.log' -Append
-    Write-Log "Windows Updates installed. (Reboot will be forced at end of script)"#>
+    if ($SkipWindowsUpdate) {
+        Write-Log "Skipping Windows Update (SkipWindowsUpdate switch set)."
+    }
+    elseif ($OfflineUpdateSource) {
+        Write-Log "Using offline Windows Update repository: $OfflineUpdateSource"
+        try {
+            Install-OfflineWindowsUpdates -Source $OfflineUpdateSource -Product $OfflineUpdateProduct
+            Write-Log "Offline Windows Updates installed. (Reboot will be forced at end of script)"
+        }
+        catch {
+            Write-LogException -Context "Offline Windows Update failed. Continuing build..." -ErrorRecord $_
+        }
+    }
+    else {
+        Write-Log "Installing PSWindowsUpdate module..."
+        try {
+            Get-PackageProvider -Name nuget -Force | Out-Null
+            Install-Module PSWindowsUpdate -Confirm:$false -Force
+            Write-Log "Installing Windows Updates (online)..."
+            Get-WindowsUpdate -MicrosoftUpdate -Install -IgnoreUserInput -AcceptAll -IgnoreReboot | Out-File -FilePath 'C:\windowsupdate.log' -Append
+            Write-Log "Windows Updates installed. (Reboot will be forced at end of script)"
+        }
+        catch {
+            Write-LogException -Context "Online Windows Update failed. Continuing build..." -ErrorRecord $_
+        }
+    }
 
     ### --- Salt Minion Installation --- ###
     $bootstrapUrl  = "https://raw.githubusercontent.com/saltstack/salt-bootstrap/develop/bootstrap-salt.ps1"

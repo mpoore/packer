@@ -20,6 +20,7 @@
 param(
     [string]$OfflineUpdateSource = '',
     [string]$OfflineUpdateProduct = '',
+    [string]$SaltVersion = '',
     [switch]$SkipWindowsUpdate
 )
 
@@ -252,6 +253,7 @@ try {
     ### --- Salt Minion Installation --- ###
     $bootstrapUrl  = "https://raw.githubusercontent.com/saltstack/salt-bootstrap/develop/bootstrap-salt.ps1"
     $bootstrapPath = "C:\install\bootstrap-salt.ps1"
+    $bootstrapArgs = "stable"
 
     try {
         if (-not (Test-Path -Path "C:\install")) {
@@ -269,7 +271,11 @@ try {
 
         try {
             Write-Log "Executing bootstrap-salt.ps1..."
-            powershell.exe -ExecutionPolicy Bypass -File $bootstrapPath
+            if ($SaltVersion) {
+                Write-Log "Setting Salt version as: ${SaltVersion}"
+                $bootstrapArgs += " ${SaltVersion}"
+            }
+            powershell.exe -ExecutionPolicy Bypass -File $bootstrapPath $bootstrapArgs
             if ($LASTEXITCODE -ne 0) {
                 throw "bootstrap-salt.ps1 exited with code $LASTEXITCODE"
             }

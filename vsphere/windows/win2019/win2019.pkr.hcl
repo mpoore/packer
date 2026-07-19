@@ -40,6 +40,7 @@ locals {
                                         build_guestos_keyboard      = var.build_guestos_keyboard
                                         build_guestos_timezone      = var.build_guestos_timezone
                                         build_windows_image         = "SERVERSTANDARDCORE"
+                                        salt_version                = var.salt_version
                                         winupdate_source            = var.winupdate_source
                                         winupdate_product           = "win2019"
                                         skip_windows_update         = var.skip_windows_update
@@ -55,6 +56,7 @@ locals {
                                         build_guestos_keyboard      = var.build_guestos_keyboard
                                         build_guestos_timezone      = var.build_guestos_timezone
                                         build_windows_image         = "SERVERSTANDARD"
+                                        salt_version                = var.salt_version
                                         winupdate_source            = var.winupdate_source
                                         winupdate_product           = "win2019"
                                         skip_windows_update         = var.skip_windows_update

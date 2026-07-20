@@ -137,47 +137,11 @@ function Install-OfflineWindowsUpdates {
             $uri = "$Source/$($entry.RelativePath)/$file"
             Write-Log "Downloading $($entry.Kb): $file ..."
 
-            # Runs the download in a background job so the main thread can
-            # poll the growing output file and log real progress - the
-            # console-only progress bar Invoke-WebRequest shows by default
-            # never reaches the log file anyway.
-            $job = Start-Job -ScriptBlock {
-                param($Uri, $Destination)
-                Invoke-WebRequest -Uri $Uri -OutFile $Destination -UseBasicParsing
-            } -ArgumentList $uri, $dest
-
-            $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
-            $lastLoggedMB = -1
-            while ($job.State -eq 'Running') {
-                Start-Sleep -Seconds 15
-                if (Test-Path $dest) {
-                    $currentMB = [math]::Round((Get-Item $dest).Length / 1MB, 1)
-                    if ($currentMB -ne $lastLoggedMB) {
-                        $lastLoggedMB = $currentMB
-                        Write-Log "  ... $currentMB MB written ($([math]::Round($stopwatch.Elapsed.TotalSeconds))s elapsed)"
-                    }
-                }
-            }
-            $stopwatch.Stop()
-
-            try {
-                Receive-Job -Job $job -ErrorAction Stop | Out-Null
-            }
-            finally {
-                Remove-Job -Job $job -Force
-            }
+            Invoke-WebRequest -Uri $uri -OutFile $dest -UseBasicParsing
 
             $sizeBytes = (Get-Item $dest).Length
             $sizeMB = [math]::Round($sizeBytes / 1MB, 2)
-            $durationSeconds = $stopwatch.Elapsed.TotalSeconds
-            if ($durationSeconds -gt 0) {
-                $speedMbps = [math]::Round(($sizeBytes * 8) / ($durationSeconds * 1MB), 2)
-                $durationWholeSeconds = [math]::Round($durationSeconds, 1)
-                Write-Log "Downloaded ${file}: ${sizeMB} MB in ${durationWholeSeconds}s (${speedMbps} Mbps)"
-            }
-            else {
-                Write-Log "Downloaded ${file}: ${sizeMB} MB"
-            }
+            Write-Log "Downloaded ${file}: ${sizeMB} MB"
 
             Write-Log "Installing $file ..."
             $proc = Start-Process -FilePath "wusa.exe" -ArgumentList "`"$dest`" /quiet /norestart" -Wait -PassThru
@@ -222,6 +186,7 @@ try {
         Write-Log "Using offline Windows Update repository: $OfflineUpdateSource"
         try {
             $offlineUpdateProduct = Get-WindowsCodename
+            Write-Log "Installing offline Windows Updates for product: $offlineUpdateProduct"
             Install-OfflineWindowsUpdates -Source $OfflineUpdateSource -Product $offlineUpdateProduct
             Write-Log "Offline Windows Updates installed. (Reboot will be forced at end of script)"
         }

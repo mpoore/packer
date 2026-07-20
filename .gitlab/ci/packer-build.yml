@@ -13,6 +13,7 @@ variables:
     - export PKR_VAR_build_password_encrypted="$(openssl passwd -6 -stdin <<< "$build_password")"
     - export PKR_VAR_rhsm_user="$rhsm_user"
     - export PKR_VAR_rhsm_pass="$rhsm_pass"
+    - export PKR_VAR_salt_version="$salt_version"
     - export PKR_VAR_skip_windows_update="$skip_windows_update"
     - export PKR_VAR_vcenter_server="$vcenter_server"
     - export PKR_VAR_vcenter_datacenter="$vcenter_datacenter"

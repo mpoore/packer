@@ -137,11 +137,12 @@ function Install-OfflineWindowsUpdates {
             $uri = "$Source/$($entry.RelativePath)/$file"
             Write-Log "Downloading $($entry.Kb): $file ..."
 
+            $ProgressPreference = 'SilentlyContinue'
             Invoke-WebRequest -Uri $uri -OutFile $dest -UseBasicParsing
 
             $sizeBytes = (Get-Item $dest).Length
             $sizeMB = [math]::Round($sizeBytes / 1MB, 2)
-            Write-Log "Downloaded ${file}: ${sizeMB} MB"
+            Write-Log "Downloaded ${file} (${sizeMB} MB)"
 
             Write-Log "Installing $file ..."
             $proc = Start-Process -FilePath "wusa.exe" -ArgumentList "`"$dest`" /quiet /norestart" -Wait -PassThru
@@ -211,7 +212,7 @@ try {
     ### --- Salt Minion Installation --- ###
     $bootstrapUrl  = "https://raw.githubusercontent.com/saltstack/salt-bootstrap/develop/bootstrap-salt.ps1"
     $bootstrapPath = "C:\install\bootstrap-salt.ps1"
-    $bootstrapArgs = "stable"
+    $bootstrapArgs = ""
 
     try {
         if (-not (Test-Path -Path "C:\install")) {
@@ -231,7 +232,7 @@ try {
             Write-Log "Executing bootstrap-salt.ps1..."
             if ($SaltVersion) {
                 Write-Log "Setting Salt version as: ${SaltVersion}"
-                $bootstrapArgs += " ${SaltVersion}"
+                $bootstrapArgs += "${SaltVersion}"
             }
             powershell.exe -ExecutionPolicy Bypass -File $bootstrapPath $bootstrapArgs
             if ($LASTEXITCODE -ne 0) {

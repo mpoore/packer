@@ -145,19 +145,23 @@
                     <Order>1</Order>
                     <Description>Set Execution Policy 64 Bit</Description>
                     <CommandLine>%SystemRoot%\system32\WindowsPowerShell\v1.0\powershell.exe -Command "Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Force"</CommandLine>
-                    <RequiresUserInput>false</RequiresUserInput>
+                    <RequiresUserInput>true</RequiresUserInput>
                 </SynchronousCommand>
                 <SynchronousCommand wcm:action="add">
                     <Order>2</Order>
                     <Description>Set Execution Policy 32 Bit</Description>
                     <CommandLine>%SystemRoot%\system32\WindowsPowerShell\v1.0\powershell.exe -Command "Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Force"</CommandLine>
-                    <RequiresUserInput>false</RequiresUserInput>
+                    <RequiresUserInput>true</RequiresUserInput>
                 </SynchronousCommand>
                 <SynchronousCommand wcm:action="add">
-                    <CommandLine>%SystemRoot%\system32\WindowsPowerShell\v1.0\powershell.exe -File F:\setup.ps1 -OfflineUpdateSource "${winupdate_source}" -OfflineUpdateProduct "${winupdate_product}" ${skip_windows_update ? "-SkipWindowsUpdate" : ""}</CommandLine>
+                    <CommandLine>%SystemRoot%\system32\WindowsPowerShell\v1.0\powershell.exe -File F:\install-vmtools.ps1</CommandLine>
                     <Description>Basic configuration</Description>
                     <Order>3</Order>
-                    <RequiresUserInput>false</RequiresUserInput>
+                </SynchronousCommand>
+                <SynchronousCommand wcm:action="add">
+                    <CommandLine>%SystemRoot%\system32\WindowsPowerShell\v1.0\powershell.exe -File F:\windows-setup.ps1 -OfflineUpdateSource "${winupdate_source}" -SaltVersion "${salt_version}" ${skip_windows_update ? "-SkipWindowsUpdate" : ""}</CommandLine>
+                    <Description>Basic configuration</Description>
+                    <Order>4</Order>
                 </SynchronousCommand>
             </FirstLogonCommands>
             <OOBE>

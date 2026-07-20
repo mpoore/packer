@@ -142,19 +142,19 @@
                     <Order>1</Order>
                     <Description>Set Execution Policy 64 Bit</Description>
                     <CommandLine>%SystemRoot%\system32\WindowsPowerShell\v1.0\powershell.exe -Command "Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Force"</CommandLine>
-                    <RequiresUserInput>false</RequiresUserInput>
+                    <RequiresUserInput>true</RequiresUserInput>
                 </SynchronousCommand>
                 <SynchronousCommand wcm:action="add">
                     <Order>2</Order>
                     <Description>Set Execution Policy 32 Bit</Description>
                     <CommandLine>%SystemRoot%\system32\WindowsPowerShell\v1.0\powershell.exe -Command "Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Force"</CommandLine>
-                    <RequiresUserInput>false</RequiresUserInput>
+                    <RequiresUserInput>true</RequiresUserInput>
                 </SynchronousCommand>
                 <SynchronousCommand wcm:action="add">
-                    <CommandLine>%SystemRoot%\system32\WindowsPowerShell\v1.0\powershell.exe -Command "F:\setup.ps1 -OfflineUpdateSource \"${winupdate_source}\" -OfflineUpdateProduct \"${winupdate_product}\" -SaltVersion \"${salt_version}\" ${skip_windows_update ? '-SkipWindowsUpdate' : ''}"</CommandLine>
+                    <CommandLine>%SystemRoot%\system32\WindowsPowerShell\v1.0\powershell.exe -File F:\setup.ps1 -OfflineUpdateSource "${winupdate_source}" -OfflineUpdateProduct "${winupdate_product}" -SaltVersion "${salt_version}" ${skip_windows_update ? "-SkipWindowsUpdate" : ""}</CommandLine>
                     <Description>Basic configuration</Description>
                     <Order>3</Order>
-                    <RequiresUserInput>false</RequiresUserInput>
+                    <RequiresUserInput>true</RequiresUserInput>
                 </SynchronousCommand>
             </FirstLogonCommands>
             <OOBE>

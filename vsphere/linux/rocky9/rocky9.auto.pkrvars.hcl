@@ -38,7 +38,7 @@ build_guestos_type              = "rockylinux_64Guest"
 build_guestos_language          = "en_GB"
 build_guestos_keyboard          = "gb"
 build_guestos_timezone          = "UTC"
-build_guestos_packages          = [ "openssl", "salt-3006.23", "salt-minion-3006.23" ]
+build_guestos_packages          = [ "openssl" ]
 
 # Timeout Settings
 build_ip_timeout                = "30m"

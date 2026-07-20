@@ -128,7 +128,7 @@ build {
     provisioner "salt" {
         state_tree          = var.state_tree
         pillar_tree         = var.pillar_tree
-        environment_vars        = [ "BUILDVERSION=${ local.build_version }", "BUILDDATE=${ local.build_date }", "BUILDBRANCH=${ var.build_branch }" ]
+        environment_vars    = [ "BUILDVERSION=${ local.build_version }", "BUILDDATE=${ local.build_date }", "BUILDBRANCH=${ var.build_branch }" ]
     }
 
     post-processor "manifest" {

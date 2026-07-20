@@ -36,6 +36,8 @@ locals {
                                         build_password            = var.build_password
                                         admin_username            = var.admin_username
                                         admin_password            = var.admin_password
+                                        build_guestos_packages    = join(" ", var.build_guestos_packages)
+                                        salt_version              = var.salt_version
                                     })
                                   }
     vm_description              = "OS: ${ var.meta_os_vendor } ${ var.meta_os_family } ${ var.meta_os_version }\nVER: ${ local.build_version } (${ var.build_branch })\nDATE: ${ local.build_date }\nISO: ${ var.os_iso_file }"

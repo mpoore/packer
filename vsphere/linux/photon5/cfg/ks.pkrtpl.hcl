@@ -74,7 +74,8 @@
         "sed -i 's/PermitRootLogin no/PermitRootLogin yes/g' /etc/ssh/sshd_config",
         "systemctl restart sshd.service",
         "curl -fsSL https://github.com/saltstack/salt-install-guide/releases/latest/download/salt.repo | tee /etc/yum.repos.d/salt.repo",
-        "tdnf install -y salt-minion openssl"
+        "tdnf install -y ${build_guestos_packages}",
+        "tdnf install -y salt-minion${salt_version != "" ? "-${salt_version}" : ""}"
     ],
     "linux_flavor": "linux",
     "network": {

@@ -39,6 +39,7 @@ locals {
                                         build_guestos_keyboard    = var.build_guestos_keyboard
                                         build_guestos_timezone    = var.build_guestos_timezone
                                         build_guestos_packages    = join(" ", var.build_guestos_packages)
+                                        salt_version              = var.salt_version
                                     })
                                   }
     vm_description              = "OS: ${ var.meta_os_vendor } ${ var.meta_os_family } ${ var.meta_os_version }\nVER: ${ local.build_version } (${ var.build_branch })\nDATE: ${ local.build_date }\nISO: ${ var.os_iso_file }"
@@ -127,7 +128,7 @@ build {
     provisioner "salt" {
         state_tree          = var.state_tree
         pillar_tree         = var.pillar_tree
-        environment_vars        = [ "BUILDVERSION=${ local.build_version }", "BUILDDATE=${ local.build_date }", "BUILDBRANCH=${ var.build_branch }" ]
+        environment_vars    = [ "BUILDVERSION=${ local.build_version }", "BUILDDATE=${ local.build_date }", "BUILDBRANCH=${ var.build_branch }" ]
     }
 
     post-processor "manifest" {

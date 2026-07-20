@@ -172,7 +172,8 @@ function Install-OfflineWindowsUpdates {
             $durationSeconds = $stopwatch.Elapsed.TotalSeconds
             if ($durationSeconds -gt 0) {
                 $speedMbps = [math]::Round(($sizeBytes * 8) / ($durationSeconds * 1MB), 2)
-                Write-Log "Downloaded $file: ${sizeMB} MB in ${([math]::Round($durationSeconds, 1))}s (${speedMbps} Mbps)"
+                $durationWholeSeconds = [math]::Round($durationSeconds, 1)
+                Write-Log "Downloaded $file: ${sizeMB} MB in ${durationWholeSeconds}s (${speedMbps} Mbps)"
             }
             else {
                 Write-Log "Downloaded ${file}: ${sizeMB} MB"

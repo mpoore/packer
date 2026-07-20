@@ -38,6 +38,14 @@ generate_pipeline:
 # there), so this regular job re-fetches the same artifact through the
 # same API path first, with real retry support, to confirm it's
 # healthy before run_builds ever touches it.
+#
+# curl uses --insecure here deliberately: mpoore/packer-ci is a public
+# Docker Hub image and doesn't (and shouldn't) carry our private CA. This
+# call isn't in the trust path for the real pipeline content - run_builds'
+# own `include: artifact:` fetch happens through GitLab's internal
+# mechanism regardless of this check's outcome - so a MITM here could at
+# worst cause a false pass or a needless retry, not feed tampered content
+# into the actual build pipeline.
 verify_pipeline_artifact:
   stage: generate
   image: mpoore/packer-ci:latest
@@ -45,7 +53,7 @@ verify_pipeline_artifact:
     - if: $SYNC_WINDOWS_UPDATES != 'true'
   script:
     - >
-      curl -fsS --header "JOB-TOKEN: ${CI_JOB_TOKEN}"
+      curl -fsS --insecure --header "JOB-TOKEN: ${CI_JOB_TOKEN}"
       "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/jobs/artifacts/${CI_COMMIT_REF_NAME}/raw/generated-pipeline.yml?job=generate_pipeline"
       -o verify-generated-pipeline.yml
     - test -s verify-generated-pipeline.yml

@@ -183,18 +183,18 @@ try {
     if ($SkipWindowsUpdate) {
         Write-Log "Skipping Windows Update (SkipWindowsUpdate switch set)."
     }
-    elseif ($OfflineUpdateSource) {
-        Write-Log "Using offline Windows Update repository: $OfflineUpdateSource"
-        try {
-            $offlineUpdateProduct = Get-WindowsCodename
-            Write-Log "Installing offline Windows Updates for product: $offlineUpdateProduct"
-            Install-OfflineWindowsUpdates -Source $OfflineUpdateSource -Product $offlineUpdateProduct
-            Write-Log "Offline Windows Updates installed. (Reboot will be forced at end of script)"
-        }
-        catch {
-            Write-LogException -Context "Offline Windows Update failed. Continuing build..." -ErrorRecord $_
-        }
-    }
+    #elseif ($OfflineUpdateSource) {
+    #    Write-Log "Using offline Windows Update repository: $OfflineUpdateSource"
+    #    try {
+    #        $offlineUpdateProduct = Get-WindowsCodename
+    #        Write-Log "Installing offline Windows Updates for product: $offlineUpdateProduct"
+    #        Install-OfflineWindowsUpdates -Source $OfflineUpdateSource -Product $offlineUpdateProduct
+    #        Write-Log "Offline Windows Updates installed. (Reboot will be forced at end of script)"
+    #    }
+    #    catch {
+    #        Write-LogException -Context "Offline Windows Update failed. Continuing build..." -ErrorRecord $_
+    #    }
+    #}
     else {
         Write-Log "Installing PSWindowsUpdate module..."
         try {

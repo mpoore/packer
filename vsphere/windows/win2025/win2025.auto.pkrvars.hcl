@@ -43,7 +43,7 @@ build_guestos_timezone          = "GMT Standard Time"
 
 # Timeout Settings
 build_ip_timeout                = "30m"
-build_winrm_timeout             = "90m"
+build_winrm_timeout             = "45m"
 build_shutdown_timeout          = "30m"
 
 # Provisioner Settings

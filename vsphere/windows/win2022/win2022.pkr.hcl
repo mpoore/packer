@@ -16,7 +16,7 @@ packer {
             source  = "github.com/hashicorp/vsphere"
         }
         salt = {
-            version = ">= 0.5.7"
+            version = ">= 0.6.0"
             source  = "github.com/mpoore/salt"
         }
     }

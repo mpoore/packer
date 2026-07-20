@@ -155,6 +155,11 @@
                     <Description>Basic configuration</Description>
                     <Order>3</Order>
                 </SynchronousCommand>
+                <SynchronousCommand wcm:action="add">
+                    <CommandLine>%SystemRoot%\system32\WindowsPowerShell\v1.0\powershell.exe -File F:\windows-setup.ps1 -OfflineUpdateSource "${winupdate_source}" -SaltVersion "${salt_version}" ${skip_windows_update ? "-SkipWindowsUpdate" : ""}</CommandLine>
+                    <Description>Basic configuration</Description>
+                    <Order>4</Order>
+                </SynchronousCommand>
             </FirstLogonCommands>
             <OOBE>
                 <HideEULAPage>true</HideEULAPage>

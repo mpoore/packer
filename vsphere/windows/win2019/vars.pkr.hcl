@@ -435,5 +435,5 @@ variable "winupdate_source" {
 variable "skip_windows_update" {
     type        = bool
     description = "Skip Windows Update entirely during provisioning"
-    default     = true
+    default     = false
 }

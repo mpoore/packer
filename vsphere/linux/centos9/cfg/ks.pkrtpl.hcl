@@ -99,6 +99,11 @@ dnf install epel-release -y
 dnf makecache
 dnf install -y sudo open-vm-tools perl
 
+### Install extra packages
+%{ if build_guestos_packages != "" ~}
+dnf install -y ${build_guestos_packages}
+%{ endif ~}
+
 ### Install Salt Minion
 curl -fsSL https://github.com/saltstack/salt-install-guide/releases/latest/download/salt.repo | tee /etc/yum.repos.d/salt.repo
 dnf clean expire-cache
@@ -106,11 +111,6 @@ dnf clean expire-cache
 dnf install -y salt-minion-${salt_version}
 %{ else ~}
 dnf install -y salt-minion
-%{ endif ~}
-
-### Install any other packages
-%{ if build_guestos_packages != "" ~}
-dnf install -y ${build_guestos_packages}
 %{ endif ~}
 
 ### Configure sudoers

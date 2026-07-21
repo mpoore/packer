@@ -103,9 +103,9 @@ dnf install -y sudo open-vm-tools perl
 curl -fsSL https://github.com/saltstack/salt-install-guide/releases/latest/download/salt.repo | tee /etc/yum.repos.d/salt.repo
 dnf clean expire-cache
 %{ if salt_version != "" ~}
-dnf install -y salt-${salt_version} salt-minion-${salt_version}
+dnf install -y salt-minion-${salt_version}
 %{ else ~}
-dnf install -y salt salt-minion
+dnf install -y salt-minion
 %{ endif ~}
 
 ### Install any other packages

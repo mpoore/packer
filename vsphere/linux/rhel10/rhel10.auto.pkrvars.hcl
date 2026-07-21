@@ -38,7 +38,7 @@ build_guestos_type              = "rhel10_64Guest"
 build_guestos_language          = "en_GB"
 build_guestos_keyboard          = "gb"
 build_guestos_timezone          = "UTC"
-build_guestos_packages          = [ "openssl" ]
+build_guestos_packages          = []
 
 # Timeout Settings
 build_ip_timeout                = "30m"

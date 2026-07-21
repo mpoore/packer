@@ -90,6 +90,7 @@ skipx
 %packages --ignoremissing --excludedocs
 @core
 -iwl*firmware
+openssl
 %end
 
 ### Post-installation commands.

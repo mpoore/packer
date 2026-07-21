@@ -16,7 +16,7 @@ packer {
             source  = "github.com/hashicorp/vsphere"
         }
         salt = {
-            version = ">= 0.5.7"
+            version = ">= 0.6.0"
             source  = "github.com/mpoore/salt"
         }
     }
@@ -40,6 +40,9 @@ locals {
                                         build_guestos_keyboard      = var.build_guestos_keyboard
                                         build_guestos_timezone      = var.build_guestos_timezone
                                         build_windows_image         = "SERVERSTANDARDCORE"
+                                        salt_version                = var.salt_version
+                                        winupdate_source            = var.winupdate_source
+                                        skip_windows_update         = var.skip_windows_update
                                     })
                                   }
     dexp_autounattend           = {
@@ -52,6 +55,9 @@ locals {
                                         build_guestos_keyboard      = var.build_guestos_keyboard
                                         build_guestos_timezone      = var.build_guestos_timezone
                                         build_windows_image         = "SERVERSTANDARD"
+                                        salt_version                = var.salt_version
+                                        winupdate_source            = var.winupdate_source
+                                        skip_windows_update         = var.skip_windows_update
                                     })
                                   }
     vm_description              = "OS: ${ var.meta_os_vendor } ${ var.meta_os_family } ${ var.meta_os_version } (${ var.meta_os_subversion })\nVER: ${ local.build_version } (${ var.build_branch })\nDATE: ${ local.build_date }\nISO: ${ var.os_iso_file }"

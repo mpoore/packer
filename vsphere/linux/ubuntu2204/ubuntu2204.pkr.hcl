@@ -16,7 +16,7 @@ packer {
             source  = "github.com/hashicorp/vsphere"
         }
         salt = {
-            version = ">= 0.5.7"
+            version = ">= 0.6.0"
             source  = "github.com/mpoore/salt"
         }
     }
@@ -38,6 +38,8 @@ locals {
                                         build_guestos_language    = var.build_guestos_language
                                         build_guestos_keyboard    = var.build_guestos_keyboard
                                         build_guestos_timezone    = var.build_guestos_timezone
+                                        build_guestos_packages    = join(" ", var.build_guestos_packages)
+                                        salt_version              = var.salt_version
                                     })
                                   }
     vm_description              = "OS: ${ var.meta_os_vendor } ${ var.meta_os_family } ${ var.meta_os_version }\nVER: ${ local.build_version } (${ var.build_branch })\nDATE: ${ local.build_date }\nISO: ${ var.os_iso_file }"

@@ -6,37 +6,56 @@ workflow:
     - when: never
 
 stages:
-  - generate
+  - check
   - build
   - sync
 
-# Discovers the current vsphere/*/* packer build directories and decides
-# which ones to build: all of them for scheduled (main) pipelines, or only
-# the ones with changed files for push pipelines (main/dev). Emits a child
-# pipeline so new build directories are picked up automatically, with no
-# need to edit this file.
-generate_pipeline:
-  stage: generate
+include:
+  - local: '.gitlab/ci/packer-build.yml'
+
+# Keeps the static build matrix below honest: fails the pipeline if a
+# build directory has been added to (or removed from) vsphere/ without
+# the run_builds matrix being updated to match, rather than silently
+# ignoring it.
+check_build_matrix:
+  stage: check
   image: mpoore/packer-ci:latest
   rules:
     - if: $SYNC_WINDOWS_UPDATES != 'true'
   script:
-    - .gitlab/ci/generate-pipeline.sh > generated-pipeline.yml
-    - cat generated-pipeline.yml
-  artifacts:
-    paths:
-      - generated-pipeline.yml
-    expire_in: 1 hour
+    - .gitlab/ci/check-build-matrix.sh
 
+# The list of packer builds. Deliberately static rather than
+# auto-discovered at pipeline run time: this list doesn't change often,
+# and a new build should be a deliberate, reviewable addition here, not
+# something a schedule silently starts building the moment a new
+# directory appears. check_build_matrix (above) fails the pipeline if
+# this list and the vsphere/ tree ever drift apart.
 run_builds:
   stage: build
+  extends: .packer_build
   rules:
     - if: $SYNC_WINDOWS_UPDATES != 'true'
-  trigger:
-    include:
-      - artifact: generated-pipeline.yml
-        job: generate_pipeline
-    strategy: depend
+  parallel:
+    matrix:
+      - BUILD:
+          - vsphere/esx/esx8
+          - vsphere/linux/centos9
+          - vsphere/linux/centos10
+          - vsphere/linux/photon5
+          - vsphere/linux/rhel9
+          - vsphere/linux/rhel10
+          - vsphere/linux/rocky9
+          - vsphere/linux/rocky10
+          - vsphere/linux/ubuntu2204
+          - vsphere/linux/ubuntu2404
+          - vsphere/linux/ubuntu2604
+          - vsphere/windows/win2019
+          - vsphere/windows/win2022
+          - vsphere/windows/win2025
+  before_script:
+    - .gitlab/ci/changed.sh "$BUILD" || exit 0
+    - !reference [.packer_build, before_script]
 
 # Syncs the offline Windows Update repository (scripts/winupdate-sync/) on
 # its own schedule, separate from the packer build schedule. Triggered by a

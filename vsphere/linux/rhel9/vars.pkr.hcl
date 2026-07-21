@@ -377,6 +377,11 @@ variable "inline_cmds" {
     description = "List of OS commands to execute"
     default     = []
 }
+variable "salt_version" {
+    type        = string
+    description = "The version of the Salt Minion to install / pin, e.g. 3006.23"
+    default     = ""
+}
 variable "state_files" {
     type        = list(string)
     description = "List of Salt States to apply"

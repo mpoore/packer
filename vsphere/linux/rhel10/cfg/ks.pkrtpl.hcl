@@ -89,8 +89,8 @@ skipx
 ### Packages selection.
 %packages --ignoremissing --excludedocs
 @core
-openssl
 -iwl*firmware
+openssl
 %end
 
 ### Post-installation commands.
@@ -99,11 +99,22 @@ dnf makecache
 dnf install epel-release -y
 dnf makecache
 dnf install -y sudo open-vm-tools perl
-curl -fsSL https://github.com/saltstack/salt-install-guide/releases/latest/download/salt.repo | tee /etc/yum.repos.d/salt.repo
-dnf clean expire-cache
+
+### Install extra packages
 %{ if build_guestos_packages != "" ~}
 dnf install -y ${build_guestos_packages}
 %{ endif ~}
+
+### Install Salt Minion
+curl -fsSL https://github.com/saltstack/salt-install-guide/releases/latest/download/salt.repo | tee /etc/yum.repos.d/salt.repo
+dnf clean expire-cache
+%{ if salt_version != "" ~}
+dnf install -y salt-${salt_version} salt-minion-${salt_version}
+%{ else ~}
+dnf install -y salt-minion
+%{ endif ~}
+
+### Configure sudoers
 echo "${build_username} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/${build_username}
 sed -i "s/^.*requiretty/#Defaults requiretty/" /etc/sudoers
 %end

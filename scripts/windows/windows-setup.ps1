@@ -4,23 +4,27 @@
 
     - Switch network to Private (required for WinRM)
     - Install Windows Updates silently
-    - Install VMware Tools from E:\setup.exe (if available)
     - Configure WinRM for remote management
     - Allow WinRM in Windows Firewall
     - Reset AutoLogonCount (known issue workaround)
     - Trigger single reboot at the end
 
-    Name:         scripts/windows/setup.ps1
+    Name:         scripts/windows/windows-setup.ps1
     Author:       Michael Poore (@mpoore)
     URL:          https://github.com/mpoore/packer
 
-    Log:          C:\Windows\Temp\packer-setup.log
 #>
+
+param(
+    [string]$OfflineUpdateSource = '',
+    [string]$SaltVersion = '',
+    [switch]$SkipWindowsUpdate
+)
 
 $ErrorActionPreference = "Stop"
 
 ### --- Logging --- ###
-$LogFile = "C:\Windows\Temp\packer-setup.log"
+$LogFile = "C:\Windows\Temp\packer-windows-setup.log"
 
 function Write-Log {
     param(
@@ -52,6 +56,18 @@ function Write-LogException {
     )
     $position = ($ErrorRecord.InvocationInfo.PositionMessage -replace "`r?`n", " ").Trim()
     Write-Log -Level ERROR "$Context : $($ErrorRecord.Exception.Message) [$position]"
+}
+
+function Get-WindowsCodename {
+    $build = [int](Get-CimInstance Win32_OperatingSystem).BuildNumber
+
+    switch ($build) {
+        { $_ -ge 26100 } { "win2025"; break }
+        { $_ -ge 20348 } { "win2022"; break }
+        { $_ -ge 17763 } { "win2019"; break }
+        { $_ -ge 14393 } { "win2016"; break }
+        default          { "unknown-$build" }
+    }
 }
 
 function Wait-ForNetworkProfile {
@@ -89,26 +105,56 @@ function Wait-ForNetworkProfile {
     }
 }
 
-try {
-    Write-Log "===== setup.ps1 started ====="
+function Install-OfflineWindowsUpdates {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Source,
 
-    ### --- VMware Tools Installation --- ###
-    $vmwareToolsPath = "E:\setup.exe"
-    if (Test-Path $vmwareToolsPath) {
-        Write-Log "Installing VMware Tools from $vmwareToolsPath ..."
-        try {
-            Start-Process -FilePath $vmwareToolsPath `
-                -ArgumentList '/S /v"/qn REBOOT=ReallySuppress" /l c:\windows\temp\vmware_tools_install.log' `
-                -Wait -NoNewWindow
-            Write-Log "VMware Tools installation completed."
+        [Parameter(Mandatory = $true)]
+        [string]$Product
+    )
+
+    $manifest = Invoke-RestMethod -Uri "$Source/manifest.json" -UseBasicParsing
+
+    # Latest release per Kind only - the manifest can hold a retention
+    # window of several months, we only want what's current.
+    $entries = $manifest | Where-Object { $_.Product -eq $Product } |
+        Group-Object Kind | ForEach-Object { $_.Group | Sort-Object LastUpdated -Descending | Select-Object -First 1 }
+
+    # SSU before LCU, per Microsoft guidance.
+    $ordered = $entries | Sort-Object { if ($_.Kind -eq 'Ssu') { 0 } else { 1 } }
+
+    $downloadDir = "C:\Windows\Temp\winupdate-offline"
+    New-Item -ItemType Directory -Path $downloadDir -Force | Out-Null
+
+    foreach ($entry in $ordered) {
+        if (-not $entry.Files -or $entry.Files.Count -eq 0) {
+            Write-Log -Level WARNING "No file list for $($entry.Kb) ($($entry.Kind)); skipping."
+            continue
         }
-        catch {
-            Write-LogException -Context "VMware Tools installation failed. Continuing build..." -ErrorRecord $_
+        foreach ($file in $entry.Files) {
+            $dest = Join-Path $downloadDir $file
+            $uri = "$Source/$($entry.RelativePath)/$file"
+            Write-Log "Downloading $($entry.Kb): $file ..."
+
+            $ProgressPreference = 'SilentlyContinue'
+            Invoke-WebRequest -Uri $uri -OutFile $dest -UseBasicParsing
+
+            $sizeBytes = (Get-Item $dest).Length
+            $sizeMB = [math]::Round($sizeBytes / 1MB, 2)
+            Write-Log "Downloaded ${file} (${sizeMB} MB)"
+
+            Write-Log "Installing $file ..."
+            $proc = Start-Process -FilePath "wusa.exe" -ArgumentList "`"$dest`" /quiet /norestart" -Wait -PassThru
+            if ($proc.ExitCode -notin @(0, 3010)) {
+                Write-Log -Level WARNING "wusa.exe exited $($proc.ExitCode) installing $file (may already be installed)."
+            }
         }
     }
-    else {
-        Write-Log -Level WARNING "VMware Tools installer not found at $vmwareToolsPath. Skipping installation."
-    }
+}
+
+try {
+    Write-Log "===== windows-setup.ps1 started ====="
 
     ### --- Network Configuration --- ###
     Write-Log "Configuring network profile..."
@@ -134,17 +180,39 @@ try {
     }
 
     ### --- Windows Update --- ###
-    <#Write-Log "Installing PSWindowsUpdate module..."
-    Get-PackageProvider -Name nuget -Force | Out-Null
-    Install-Module PSWindowsUpdate -Confirm:$false -Force
-
-    Write-Log "Installing Windows Updates..."
-    Get-WindowsUpdate -MicrosoftUpdate -Install -IgnoreUserInput -AcceptAll -IgnoreReboot | Out-File -FilePath 'C:\windowsupdate.log' -Append
-    Write-Log "Windows Updates installed. (Reboot will be forced at end of script)"#>
+    if ($SkipWindowsUpdate) {
+        Write-Log "Skipping Windows Update (SkipWindowsUpdate switch set)."
+    }
+    #elseif ($OfflineUpdateSource) {
+    #    Write-Log "Using offline Windows Update repository: $OfflineUpdateSource"
+    #    try {
+    #        $offlineUpdateProduct = Get-WindowsCodename
+    #        Write-Log "Installing offline Windows Updates for product: $offlineUpdateProduct"
+    #        Install-OfflineWindowsUpdates -Source $OfflineUpdateSource -Product $offlineUpdateProduct
+    #        Write-Log "Offline Windows Updates installed. (Reboot will be forced at end of script)"
+    #    }
+    #    catch {
+    #        Write-LogException -Context "Offline Windows Update failed. Continuing build..." -ErrorRecord $_
+    #    }
+    #}
+    else {
+        Write-Log "Installing PSWindowsUpdate module..."
+        try {
+            Get-PackageProvider -Name nuget -Force | Out-Null
+            Install-Module PSWindowsUpdate -Confirm:$false -Force
+            Write-Log "Installing Windows Updates (online)..."
+            Get-WindowsUpdate -MicrosoftUpdate -Install -IgnoreUserInput -AcceptAll -IgnoreReboot | Out-File -FilePath 'C:\windowsupdate.log' -Append
+            Write-Log "Windows Updates installed. (Reboot will be forced at end of script)"
+        }
+        catch {
+            Write-LogException -Context "Online Windows Update failed. Continuing build..." -ErrorRecord $_
+        }
+    }
 
     ### --- Salt Minion Installation --- ###
     $bootstrapUrl  = "https://raw.githubusercontent.com/saltstack/salt-bootstrap/develop/bootstrap-salt.ps1"
     $bootstrapPath = "C:\install\bootstrap-salt.ps1"
+    $bootstrapArgs = ""
 
     try {
         if (-not (Test-Path -Path "C:\install")) {
@@ -162,7 +230,11 @@ try {
 
         try {
             Write-Log "Executing bootstrap-salt.ps1..."
-            powershell.exe -ExecutionPolicy Bypass -File $bootstrapPath
+            if ($SaltVersion) {
+                Write-Log "Setting Salt version as: ${SaltVersion}"
+                $bootstrapArgs += "${SaltVersion}"
+            }
+            powershell.exe -ExecutionPolicy Bypass -File $bootstrapPath $bootstrapArgs
             if ($LASTEXITCODE -ne 0) {
                 throw "bootstrap-salt.ps1 exited with code $LASTEXITCODE"
             }
@@ -177,38 +249,6 @@ try {
         Write-Log -Level ERROR "===== setup.ps1 terminated: Salt Minion installation failed ====="
         exit 1
     }
-
-    ### --- OpenSSH Configuration --- ####
-    #Write-Log "Configuring OpenSSH..."
-    # Check if OpenSSH Server is installed
-    #$sshCapability = Get-WindowsCapability -Online | Where-Object Name -like 'OpenSSH.Server*'
-    #if ($sshCapability.State -ne 'Installed') {
-    #    Write-Log "Installing OpenSSH Server..."
-    #    Add-WindowsCapability -Online -Name 'OpenSSH.Server~~~~0.0.1.0'
-    #} else {
-    #    Write-Log "OpenSSH Server already installed."
-    #}
-
-    # Check if the OpenSSH service is running
-    #$sshService = Get-Service -Name sshd -ErrorAction SilentlyContinue
-    #if ($sshService -eq $null) {
-    #    Write-Log "sshd service not found, something went wrong."
-    #} elseif ($sshService.Status -ne 'Running') {
-    #    Write-Log "Starting sshd service..."
-    #    Start-Service sshd
-    #} else {
-    #    Write-Log "sshd service already running."
-    #}
-
-    # Open port 22 in Windows Firewall
-    #Write-Log "Adding firewall rule to allow port 22..."
-    #New-NetFirewallRule -Name 'OpenSSH-Server-In-TCP' `
-    #                    -DisplayName 'OpenSSH-Server-In-TCP' `
-    #                    -Enabled True `
-    #                    -Direction Inbound `
-    #                    -Protocol TCP `
-    #                    -LocalPort 22 `
-    #                    -Action Allow
 
     ### --- WinRM Configuration --- ###
     Write-Log "Configuring WinRM..."
@@ -233,10 +273,10 @@ try {
         Write-LogException -Context "Failed to configure firewall rules. Continuing build..." -ErrorRecord $_
     }
 
-    Write-Log "===== setup.ps1 completed successfully ====="
+    Write-Log "===== windows-setup.ps1 completed successfully ====="
 }
 catch {
-    Write-LogException -Context "FATAL: unhandled error in setup.ps1" -ErrorRecord $_
-    Write-Log -Level ERROR "===== setup.ps1 terminated with errors ====="
+    Write-LogException -Context "FATAL: unhandled error in windows-setup.ps1" -ErrorRecord $_
+    Write-Log -Level ERROR "===== windows-setup.ps1 terminated with errors ====="
     exit 1
 }

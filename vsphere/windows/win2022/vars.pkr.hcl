@@ -377,6 +377,11 @@ variable "inline_cmds" {
     description = "List of OS commands to execute"
     default     = []
 }
+variable "salt_version" {
+    type        = string
+    description = "The version of the Salt Minion to install / pin, e.g. 3006.23"
+    default     = ""
+}
 variable "state_files" {
     type        = list(string)
     description = "List of Salt States to apply"
@@ -421,4 +426,14 @@ variable "build_pkiserver" {
     type        = string
     description = "Base URL for acquiring SSL certificates"
     default     = ""
+}
+variable "winupdate_source" {
+    type        = string
+    description = "Base URL of the offline Windows Update repository (e.g. http://winupdate.example.com). Empty means use online Windows Update."
+    default     = ""
+}
+variable "skip_windows_update" {
+    type        = bool
+    description = "Skip Windows Update entirely during provisioning"
+    default     = false
 }

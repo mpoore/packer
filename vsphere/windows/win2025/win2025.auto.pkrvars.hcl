@@ -42,9 +42,9 @@ build_guestos_systemlocale      = "en-US"
 build_guestos_timezone          = "GMT Standard Time"
 
 # Timeout Settings
-build_ip_timeout                = "90m"
-build_winrm_timeout             = "120m"
-build_shutdown_timeout          = "120m"
+build_ip_timeout                = "30m"
+build_winrm_timeout             = "45m"
+build_shutdown_timeout          = "30m"
 
 # Provisioner Settings
 state_tree                      = "salt/states/windows"

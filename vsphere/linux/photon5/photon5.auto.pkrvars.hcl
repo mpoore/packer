@@ -38,6 +38,7 @@ build_guestos_type              = "vmwarePhoton64Guest"
 build_guestos_language          = ""
 build_guestos_keyboard          = ""
 build_guestos_timezone          = ""
+build_guestos_packages          = [ "openssl" ]
 
 # Timeout Settings
 build_ip_timeout                = "15m"

@@ -73,8 +73,9 @@
         "ssh-keygen -A",
         "sed -i 's/PermitRootLogin no/PermitRootLogin yes/g' /etc/ssh/sshd_config",
         "systemctl restart sshd.service",
+        %{ if build_guestos_packages != "" }"tdnf install -y ${build_guestos_packages}",%{ endif ~}
         "curl -fsSL https://github.com/saltstack/salt-install-guide/releases/latest/download/salt.repo | tee /etc/yum.repos.d/salt.repo",
-        "tdnf install -y salt-minion openssl"
+        %{ if salt_version != ""}"tdnf install -y salt-minion-${salt_version}"%{ else }"tdnf install -y salt-minion"%{ endif ~}
     ],
     "linux_flavor": "linux",
     "network": {

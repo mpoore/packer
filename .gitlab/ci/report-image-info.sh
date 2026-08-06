@@ -4,6 +4,7 @@
 set -euo pipefail
 
 echo "================================================================================"
+echo "Packer CI image: $1" 
 if [[ -f /VERSION ]]; then
     echo "Packer CI image version: $(cat /VERSION)"
 else

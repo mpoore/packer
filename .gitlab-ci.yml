@@ -47,13 +47,13 @@ include:
 check_build_matrix-dev:
   <<: *check_build_matrix
   rules:
-    - if: $CI_COMMIT_REF_NAME == 'dev' && $SYNC_WINDOWS_UPDATES != 'true'
+    - if: $CI_PIPELINE_SOURCE == 'push' && $CI_COMMIT_REF_NAME == 'dev' && $SYNC_WINDOWS_UPDATES != 'true'
   environment: dev
 
 check_build_matrix-main:
   <<: *check_build_matrix
   rules:
-    - if: $CI_COMMIT_REF_NAME == 'main' && $SYNC_WINDOWS_UPDATES != 'true'
+    - if: ($CI_PIPELINE_SOURCE == 'push' || $CI_PIPELINE_SOURCE == 'schedule') && $CI_COMMIT_REF_NAME == 'main' && $SYNC_WINDOWS_UPDATES != 'true'
   environment: main
 
 check_build_matrix-mr:
@@ -70,7 +70,7 @@ run_builds-dev:
   extends: .packer_build
   stage: build
   rules:
-    - if: $CI_COMMIT_REF_NAME == 'dev' && $SYNC_WINDOWS_UPDATES != 'true'
+    - if: $CI_PIPELINE_SOURCE == 'push' && $CI_COMMIT_REF_NAME == 'dev' && $SYNC_WINDOWS_UPDATES != 'true'
   environment: dev
   parallel:
     matrix:
@@ -83,7 +83,7 @@ run_builds-main:
   extends: .packer_build
   stage: build
   rules:
-    - if: $CI_COMMIT_REF_NAME == 'main' && $SYNC_WINDOWS_UPDATES != 'true'
+    - if: ($CI_PIPELINE_SOURCE == 'push' || $CI_PIPELINE_SOURCE == 'schedule') && $CI_COMMIT_REF_NAME == 'main' && $SYNC_WINDOWS_UPDATES != 'true'
   environment: main
   parallel:
     matrix:

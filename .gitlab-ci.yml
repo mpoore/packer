@@ -3,6 +3,7 @@ workflow:
     - if: $CI_PIPELINE_SOURCE == 'schedule' && $CI_COMMIT_REF_NAME == 'main' && $SYNC_WINDOWS_UPDATES == 'true'
     - if: $CI_PIPELINE_SOURCE == 'schedule' && $CI_COMMIT_REF_NAME == 'main'
     - if: $CI_PIPELINE_SOURCE == 'push' && ($CI_COMMIT_REF_NAME == 'main' || $CI_COMMIT_REF_NAME == 'dev')
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
     - when: never
 
 stages:
@@ -13,49 +14,100 @@ stages:
 include:
   - local: '.gitlab/ci/packer-build.yml'
 
-# Keeps the static build matrix below honest: fails the pipeline if a
-# build directory has been added to (or removed from) vsphere/ without
-# the run_builds matrix being updated to match, rather than silently
-# ignoring it.
-check_build_matrix:
+# Single source of truth for the vsphere/*/* build targets, referenced via
+# the *build_matrix anchor below so it only appears once. check-build-matrix.sh
+# fails the pipeline if this list and the vsphere/ tree drift apart.
+.build_matrix: &build_matrix
+  - vsphere/esx/esx8
+  - vsphere/linux/centos9
+  - vsphere/linux/centos10
+  - vsphere/linux/photon5
+  - vsphere/linux/rhel9
+  - vsphere/linux/rhel10
+  - vsphere/linux/rocky9
+  - vsphere/linux/rocky10
+  - vsphere/linux/ubuntu2204
+  - vsphere/linux/ubuntu2404
+  - vsphere/linux/ubuntu2604
+  - vsphere/windows/win2019
+  - vsphere/windows/win2022
+  - vsphere/windows/win2025
+
+# Keeps the build matrix above honest: fails the pipeline if a build
+# directory has been added to (or removed from) vsphere/ without the
+# matrix being updated to match. Split into -dev/-main/-mr so it runs with
+# the environment scope (and environment-scoped CI/CD variables, if ever
+# needed) matching whichever pipeline triggered it.
+.check_build_matrix: &check_build_matrix
   stage: check
   image: $PACKER_CI_IMAGE
-  rules:
-    - if: $SYNC_WINDOWS_UPDATES != 'true'
   script:
     - .gitlab/ci/check-build-matrix.sh
 
-# The list of packer builds. Deliberately static rather than
-# auto-discovered at pipeline run time: this list doesn't change often,
-# and a new build should be a deliberate, reviewable addition here, not
-# something a schedule silently starts building the moment a new
-# directory appears. check_build_matrix (above) fails the pipeline if
-# this list and the vsphere/ tree ever drift apart.
-run_builds:
-  stage: build
-  extends: .packer_build
+check_build_matrix-dev:
+  <<: *check_build_matrix
   rules:
-    - if: $SYNC_WINDOWS_UPDATES != 'true'
+    - if: $CI_COMMIT_REF_NAME == 'dev' && $SYNC_WINDOWS_UPDATES != 'true'
+  environment: dev
+
+check_build_matrix-main:
+  <<: *check_build_matrix
+  rules:
+    - if: $CI_COMMIT_REF_NAME == 'main' && $SYNC_WINDOWS_UPDATES != 'true'
+  environment: main
+
+check_build_matrix-mr:
+  <<: *check_build_matrix
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+
+# The list of packer builds, run in full (init, build, provision) on pushes
+# to dev/main and on the scheduled rebuild. Split into -dev/-main so
+# environment-scoped CI/CD variables (Settings > CI/CD > Variables >
+# Environment scope: "dev" / "main") can differ per branch, same pattern as
+# packer-ci's build-dev/build-main.
+run_builds-dev:
+  extends: .packer_build
+  stage: build
+  rules:
+    - if: $CI_COMMIT_REF_NAME == 'dev' && $SYNC_WINDOWS_UPDATES != 'true'
+  environment: dev
   parallel:
     matrix:
-      - BUILD:
-          - vsphere/esx/esx8
-          - vsphere/linux/centos9
-          - vsphere/linux/centos10
-          - vsphere/linux/photon5
-          - vsphere/linux/rhel9
-          - vsphere/linux/rhel10
-          - vsphere/linux/rocky9
-          - vsphere/linux/rocky10
-          - vsphere/linux/ubuntu2204
-          - vsphere/linux/ubuntu2404
-          - vsphere/linux/ubuntu2604
-          - vsphere/windows/win2019
-          - vsphere/windows/win2022
-          - vsphere/windows/win2025
+      - BUILD: *build_matrix
   before_script:
     - .gitlab/ci/changed.sh "$BUILD" || exit 0
     - !reference [.packer_build, before_script]
+
+run_builds-main:
+  extends: .packer_build
+  stage: build
+  rules:
+    - if: $CI_COMMIT_REF_NAME == 'main' && $SYNC_WINDOWS_UPDATES != 'true'
+  environment: main
+  parallel:
+    matrix:
+      - BUILD: *build_matrix
+  before_script:
+    - .gitlab/ci/changed.sh "$BUILD" || exit 0
+    - !reference [.packer_build, before_script]
+
+# Merge request pipelines only validate that each build initializes cleanly
+# (plugin resolution, template syntax) - the actual multi-hour vSphere build
+# runs on push to dev/main instead, not on every MR update.
+run_builds-mr:
+  stage: build
+  image: $PACKER_CI_IMAGE
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+  parallel:
+    matrix:
+      - BUILD: *build_matrix
+  before_script:
+    - .gitlab/ci/changed.sh "$BUILD" || exit 0
+    - .gitlab/ci/report-image-info.sh "$PACKER_CI_IMAGE"
+  script:
+    - packer init "$BUILD"
 
 # Syncs the offline Windows Update repository (scripts/winupdate-sync/) on
 # its own schedule, separate from the packer build schedule. Triggered by a

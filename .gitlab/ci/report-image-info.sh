@@ -3,10 +3,10 @@
 # reading the VERSION and PLUGINS files baked into the image at build time.
 set -euo pipefail
 
-echo "================================================================================"
-echo "Packer CI image: $1" 
+echo "=========================================================================================="
+echo "Packer CI image source : $1" 
 if [[ -f /VERSION ]]; then
-    echo "Packer CI image version: $(cat /VERSION)"
+    echo "Packer CI image version: $(jq -r '.version' /VERSION)"
 else
     echo "Packer CI image version: unknown (/VERSION not found)"
 fi
@@ -17,4 +17,4 @@ if [[ -f /PLUGINS ]]; then
 else
     echo "Installed plugins: unknown (/PLUGINS not found)"
 fi
-echo "================================================================================"
+echo "=========================================================================================="

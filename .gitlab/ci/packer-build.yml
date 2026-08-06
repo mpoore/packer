@@ -3,7 +3,7 @@ variables:
 
 .packer_build:
   stage: build
-  image: mpoore/packer-ci:latest
+  image: $PACKER_CI_IMAGE
   before_script:
     - export PKR_VAR_vcenter_username="$vcenter_username"
     - export PKR_VAR_vcenter_password="$vcenter_password"

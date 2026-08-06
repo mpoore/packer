@@ -19,7 +19,7 @@ include:
 # ignoring it.
 check_build_matrix:
   stage: check
-  image: mpoore/packer-ci:latest
+  image: $PACKER_CI_IMAGE
   rules:
     - if: $SYNC_WINDOWS_UPDATES != 'true'
   script:

@@ -5,6 +5,7 @@ variables:
   stage: build
   image: $PACKER_CI_IMAGE
   before_script:
+    - .gitlab/ci/report-image-info.sh
     - export PKR_VAR_vcenter_username="$vcenter_username"
     - export PKR_VAR_vcenter_password="$vcenter_password"
     - export PKR_VAR_admin_password="$admin_password"

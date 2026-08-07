@@ -21,7 +21,6 @@ include:
   - vsphere/esx/esx8
   - vsphere/linux/centos9
   - vsphere/linux/centos10
-  - vsphere/linux/photon5
   - vsphere/linux/rhel9
   - vsphere/linux/rhel10
   - vsphere/linux/rocky9

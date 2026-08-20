@@ -32,14 +32,14 @@ variables:
     - set -o pipefail
     - echo "Building $BUILD (branch $CI_COMMIT_REF_NAME, triggered by $CI_PIPELINE_SOURCE)"
     - mkdir -p logs
-    - packer init "$BUILD"
+    - packer init -no-upgrade "$BUILD"
     - |
       if [ "$CI_COMMIT_REF_NAME" = "main" ]; then
         ON_ERROR="cleanup"
       else
         ON_ERROR="abort"
       fi
-    - packer build -color=false -timestamp-ui -force -no-upgrade -on-error="$ON_ERROR" "$BUILD" | tee "logs/$(basename "$BUILD").log"
+    - packer build -color=false -timestamp-ui -force -on-error="$ON_ERROR" "$BUILD" | tee "logs/$(basename "$BUILD").log"
   artifacts:
     when: always
     paths:

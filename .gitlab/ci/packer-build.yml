@@ -39,7 +39,7 @@ variables:
       else
         ON_ERROR="abort"
       fi
-    - packer build -color=false -timestamp-ui -force -on-error="$ON_ERROR" "$BUILD" | tee "logs/$(basename "$BUILD").log"
+    - packer build -color=false -timestamp-ui -force -no-upgrade -on-error="$ON_ERROR" "$BUILD" | tee "logs/$(basename "$BUILD").log"
   artifacts:
     when: always
     paths:

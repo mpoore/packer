@@ -1,7 +1,6 @@
 workflow:
   rules:
-    - if: $CI_PIPELINE_SOURCE == 'schedule' && $CI_COMMIT_REF_NAME == 'main' && $SYNC_WINDOWS_UPDATES == 'true'
-    - if: $CI_PIPELINE_SOURCE == 'schedule' && $CI_COMMIT_REF_NAME == 'main'
+    - if: $CI_PIPELINE_SOURCE == 'schedule' && ($CI_COMMIT_REF_NAME == 'main' || $CI_COMMIT_REF_NAME == 'dev')
     - if: $CI_PIPELINE_SOURCE == 'push' && ($CI_COMMIT_REF_NAME == 'main' || $CI_COMMIT_REF_NAME == 'dev')
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
     - when: never
@@ -9,7 +8,6 @@ workflow:
 stages:
   - check
   - build
-  - sync
 
 include:
   - local: '.gitlab/ci/packer-build.yml'
@@ -46,13 +44,13 @@ include:
 check_build_matrix-dev:
   <<: *check_build_matrix
   rules:
-    - if: $CI_PIPELINE_SOURCE == 'push' && $CI_COMMIT_REF_NAME == 'dev' && $SYNC_WINDOWS_UPDATES != 'true'
+    - if: ($CI_PIPELINE_SOURCE == 'push' || $CI_PIPELINE_SOURCE == 'schedule') && $CI_COMMIT_REF_NAME == 'dev'
   environment: dev
 
 check_build_matrix-main:
   <<: *check_build_matrix
   rules:
-    - if: ($CI_PIPELINE_SOURCE == 'push' || $CI_PIPELINE_SOURCE == 'schedule') && $CI_COMMIT_REF_NAME == 'main' && $SYNC_WINDOWS_UPDATES != 'true'
+    - if: ($CI_PIPELINE_SOURCE == 'push' || $CI_PIPELINE_SOURCE == 'schedule') && $CI_COMMIT_REF_NAME == 'main'
   environment: main
 
 check_build_matrix-mr:
@@ -69,7 +67,7 @@ run_builds-dev:
   extends: .packer_build
   stage: build
   rules:
-    - if: $CI_PIPELINE_SOURCE == 'push' && $CI_COMMIT_REF_NAME == 'dev' && $SYNC_WINDOWS_UPDATES != 'true'
+    - if: ($CI_PIPELINE_SOURCE == 'push' || $CI_PIPELINE_SOURCE == 'schedule') && $CI_COMMIT_REF_NAME == 'dev'
   environment: dev
   parallel:
     matrix:
@@ -82,7 +80,7 @@ run_builds-main:
   extends: .packer_build
   stage: build
   rules:
-    - if: ($CI_PIPELINE_SOURCE == 'push' || $CI_PIPELINE_SOURCE == 'schedule') && $CI_COMMIT_REF_NAME == 'main' && $SYNC_WINDOWS_UPDATES != 'true'
+    - if: ($CI_PIPELINE_SOURCE == 'push' || $CI_PIPELINE_SOURCE == 'schedule') && $CI_COMMIT_REF_NAME == 'main'
   environment: main
   parallel:
     matrix:
@@ -106,31 +104,4 @@ run_builds-mr:
     - .gitlab/ci/changed.sh "$BUILD" || exit 0
     - .gitlab/ci/report-image-info.sh "$PACKER_CI_IMAGE"
   script:
-    - packer init "$BUILD"
-
-# Syncs the offline Windows Update repository (scripts/winupdate-sync/) on
-# its own schedule, separate from the packer build schedule. Triggered by a
-# dedicated GitLab Pipeline Schedule with SYNC_WINDOWS_UPDATES=true set.
-sync_windows_updates:
-  stage: sync
-  image: mcr.microsoft.com/powershell:latest
-  rules:
-    - if: $SYNC_WINDOWS_UPDATES == 'true'
-  before_script:
-    - apt-get update -qq && apt-get install -y -qq rsync openssh-client
-    - mkdir -p ~/.ssh && chmod 700 ~/.ssh
-    - echo "$winupdate_ssh_private_key" > ~/.ssh/id_ed25519 && chmod 600 ~/.ssh/id_ed25519
-    - echo "$winupdate_ssh_known_hosts" > ~/.ssh/known_hosts
-    # TEMPORARY: raw bash-level ssh call, bypassing PowerShell entirely, to
-    # isolate whether the "hostname contains invalid characters" failure is
-    # specific to how pwsh invokes ssh in this container. Remove once resolved.
-    - ssh -V
-    - ssh -v -o BatchMode=yes "${winupdate_repo_user}@${winupdate_repo_host}" whoami || true
-  script:
-    - pwsh -File scripts/winupdate-sync/sync.ps1
-  variables:
-    WINUPDATE_REPO_HOST: $winupdate_repo_host
-    WINUPDATE_REPO_USER: $winupdate_repo_user
-    WINUPDATE_REPO_PATH: $winupdate_repo_path
-    # TEMPORARY: diagnosing the rsync "Permission denied" failures. Remove once resolved.
-    WINUPDATE_SSH_DEBUG: "true"
+    - packer init -no-upgrade "$BUILD"

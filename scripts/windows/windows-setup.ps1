@@ -16,7 +16,6 @@
 #>
 
 param(
-    [string]$OfflineUpdateSource = '',
     [string]$SaltVersion = '',
     [switch]$SkipWindowsUpdate
 )
@@ -58,18 +57,6 @@ function Write-LogException {
     Write-Log -Level ERROR "$Context : $($ErrorRecord.Exception.Message) [$position]"
 }
 
-function Get-WindowsCodename {
-    $build = [int](Get-CimInstance Win32_OperatingSystem).BuildNumber
-
-    switch ($build) {
-        { $_ -ge 26100 } { "win2025"; break }
-        { $_ -ge 20348 } { "win2022"; break }
-        { $_ -ge 17763 } { "win2019"; break }
-        { $_ -ge 14393 } { "win2016"; break }
-        default          { "unknown-$build" }
-    }
-}
-
 function Wait-ForNetworkProfile {
     param(
         [int]$MaxAttempts = 18,
@@ -105,54 +92,6 @@ function Wait-ForNetworkProfile {
     }
 }
 
-function Install-OfflineWindowsUpdates {
-    param(
-        [Parameter(Mandatory = $true)]
-        [string]$Source,
-
-        [Parameter(Mandatory = $true)]
-        [string]$Product
-    )
-
-    $manifest = Invoke-RestMethod -Uri "$Source/manifest.json" -UseBasicParsing
-
-    # Latest release per Kind only - the manifest can hold a retention
-    # window of several months, we only want what's current.
-    $entries = $manifest | Where-Object { $_.Product -eq $Product } |
-        Group-Object Kind | ForEach-Object { $_.Group | Sort-Object LastUpdated -Descending | Select-Object -First 1 }
-
-    # SSU before LCU, per Microsoft guidance.
-    $ordered = $entries | Sort-Object { if ($_.Kind -eq 'Ssu') { 0 } else { 1 } }
-
-    $downloadDir = "C:\Windows\Temp\winupdate-offline"
-    New-Item -ItemType Directory -Path $downloadDir -Force | Out-Null
-
-    foreach ($entry in $ordered) {
-        if (-not $entry.Files -or $entry.Files.Count -eq 0) {
-            Write-Log -Level WARNING "No file list for $($entry.Kb) ($($entry.Kind)); skipping."
-            continue
-        }
-        foreach ($file in $entry.Files) {
-            $dest = Join-Path $downloadDir $file
-            $uri = "$Source/$($entry.RelativePath)/$file"
-            Write-Log "Downloading $($entry.Kb): $file ..."
-
-            $ProgressPreference = 'SilentlyContinue'
-            Invoke-WebRequest -Uri $uri -OutFile $dest -UseBasicParsing
-
-            $sizeBytes = (Get-Item $dest).Length
-            $sizeMB = [math]::Round($sizeBytes / 1MB, 2)
-            Write-Log "Downloaded ${file} (${sizeMB} MB)"
-
-            Write-Log "Installing $file ..."
-            $proc = Start-Process -FilePath "wusa.exe" -ArgumentList "`"$dest`" /quiet /norestart" -Wait -PassThru
-            if ($proc.ExitCode -notin @(0, 3010)) {
-                Write-Log -Level WARNING "wusa.exe exited $($proc.ExitCode) installing $file (may already be installed)."
-            }
-        }
-    }
-}
-
 try {
     Write-Log "===== windows-setup.ps1 started ====="
 
@@ -183,18 +122,6 @@ try {
     if ($SkipWindowsUpdate) {
         Write-Log "Skipping Windows Update (SkipWindowsUpdate switch set)."
     }
-    #elseif ($OfflineUpdateSource) {
-    #    Write-Log "Using offline Windows Update repository: $OfflineUpdateSource"
-    #    try {
-    #        $offlineUpdateProduct = Get-WindowsCodename
-    #        Write-Log "Installing offline Windows Updates for product: $offlineUpdateProduct"
-    #        Install-OfflineWindowsUpdates -Source $OfflineUpdateSource -Product $offlineUpdateProduct
-    #        Write-Log "Offline Windows Updates installed. (Reboot will be forced at end of script)"
-    #    }
-    #    catch {
-    #        Write-LogException -Context "Offline Windows Update failed. Continuing build..." -ErrorRecord $_
-    #    }
-    #}
     else {
         Write-Log "Installing PSWindowsUpdate module..."
         try {

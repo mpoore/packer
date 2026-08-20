@@ -41,6 +41,15 @@ $sshDebug = $env:WINUPDATE_SSH_DEBUG -eq 'true'
 $sshArgs = if ($sshDebug) { @('-v') } else { @() }
 $rsyncRsh = if ($sshDebug) { 'ssh -v' } else { 'ssh' }
 
+if ($sshDebug) {
+    # Byte-level dump so any hidden/invalid character in the CI/CD variable
+    # values shows up unambiguously, rather than being invisible or
+    # misrendered in the job log.
+    Write-Host "DEBUG repoUser bytes: $([System.Text.Encoding]::UTF8.GetBytes($repoUser) -join ',')"
+    Write-Host "DEBUG repoHost bytes: $([System.Text.Encoding]::UTF8.GetBytes($repoHost) -join ',')"
+    Write-Host "DEBUG remote string : [$remote]"
+}
+
 $stagingRoot = Join-Path ([System.IO.Path]::GetTempPath()) "winupdate-staging"
 if (Test-Path $stagingRoot) { Remove-Item $stagingRoot -Recurse -Force }
 New-Item -ItemType Directory -Path $stagingRoot | Out-Null

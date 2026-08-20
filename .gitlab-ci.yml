@@ -2,7 +2,6 @@ workflow:
   rules:
     - if: $CI_PIPELINE_SOURCE == 'schedule' && ($CI_COMMIT_REF_NAME == 'main' || $CI_COMMIT_REF_NAME == 'dev')
     - if: $CI_PIPELINE_SOURCE == 'push' && ($CI_COMMIT_REF_NAME == 'main' || $CI_COMMIT_REF_NAME == 'dev')
-    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
     - when: never
 
 stages:
@@ -53,11 +52,6 @@ check_build_matrix-main:
     - if: ($CI_PIPELINE_SOURCE == 'push' || $CI_PIPELINE_SOURCE == 'schedule') && $CI_COMMIT_REF_NAME == 'main'
   environment: main
 
-check_build_matrix-mr:
-  <<: *check_build_matrix
-  rules:
-    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
-
 # The list of packer builds, run in full (init, build, provision) on pushes
 # to dev/main and on the scheduled rebuild. Split into -dev/-main so
 # environment-scoped CI/CD variables (Settings > CI/CD > Variables >
@@ -88,20 +82,3 @@ run_builds-main:
   before_script:
     - .gitlab/ci/changed.sh "$BUILD" || exit 0
     - !reference [.packer_build, before_script]
-
-# Merge request pipelines only validate that each build initializes cleanly
-# (plugin resolution, template syntax) - the actual multi-hour vSphere build
-# runs on push to dev/main instead, not on every MR update.
-run_builds-mr:
-  stage: build
-  image: $PACKER_CI_IMAGE
-  rules:
-    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
-  parallel:
-    matrix:
-      - BUILD: *build_matrix
-  before_script:
-    - .gitlab/ci/changed.sh "$BUILD" || exit 0
-    - .gitlab/ci/report-image-info.sh "$PACKER_CI_IMAGE"
-  script:
-    - packer init -no-upgrade "$BUILD"

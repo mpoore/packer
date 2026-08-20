@@ -121,6 +121,11 @@ sync_windows_updates:
     - mkdir -p ~/.ssh && chmod 700 ~/.ssh
     - echo "$winupdate_ssh_private_key" > ~/.ssh/id_ed25519 && chmod 600 ~/.ssh/id_ed25519
     - echo "$winupdate_ssh_known_hosts" > ~/.ssh/known_hosts
+    # TEMPORARY: raw bash-level ssh call, bypassing PowerShell entirely, to
+    # isolate whether the "hostname contains invalid characters" failure is
+    # specific to how pwsh invokes ssh in this container. Remove once resolved.
+    - ssh -V
+    - ssh -v -o BatchMode=yes "${winupdate_repo_user}@${winupdate_repo_host}" whoami || true
   script:
     - pwsh -File scripts/winupdate-sync/sync.ps1
   variables:

@@ -24,9 +24,12 @@ $ErrorActionPreference = "Stop"
 $configPath = Join-Path $PSScriptRoot "config.psd1"
 $config = Import-PowerShellDataFile -Path $configPath
 
-$repoHost = $env:WINUPDATE_REPO_HOST
-$repoUser = $env:WINUPDATE_REPO_USER
-$repoPath = $env:WINUPDATE_REPO_PATH
+# .Trim() guards against stray whitespace/newlines in CI/CD variable values
+# (e.g. pasted with Windows line endings) - a trailing "\r" here is enough to
+# make ssh reject the whole host string with "hostname contains invalid characters".
+$repoHost = ($env:WINUPDATE_REPO_HOST ?? '').Trim()
+$repoUser = ($env:WINUPDATE_REPO_USER ?? '').Trim()
+$repoPath = ($env:WINUPDATE_REPO_PATH ?? '').Trim()
 if (-not $repoHost -or -not $repoUser -or -not $repoPath) {
     throw "WINUPDATE_REPO_HOST, WINUPDATE_REPO_USER and WINUPDATE_REPO_PATH must all be set."
 }

@@ -41,7 +41,7 @@ build_guestos_timezone          = "UTC"
 build_guestos_packages          = [ "openssl" ]
 
 # Timeout Settings
-build_ip_timeout                = "30m"
+build_ip_timeout                = "45m"
 build_ssh_timeout               = "5m"
 build_shutdown_timeout          = "5m"
 

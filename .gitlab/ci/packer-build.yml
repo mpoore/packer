@@ -32,7 +32,7 @@ variables:
     - set -o pipefail
     - echo "Building $BUILD (branch $CI_COMMIT_REF_NAME, triggered by $CI_PIPELINE_SOURCE)"
     - mkdir -p logs
-    - packer init -no-upgrade "$BUILD"
+    - packer init "$BUILD"
     - |
       if [ "$CI_COMMIT_REF_NAME" = "main" ]; then
         ON_ERROR="cleanup"

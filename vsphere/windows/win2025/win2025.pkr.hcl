@@ -13,7 +13,7 @@ packer {
     required_plugins {
         vsphere = {
             version = ">= 2.2.0"
-            source  = "github.com/hashicorp/vsphere"
+            source  = "github.com/vmware/vsphere"
         }
         salt = {
             version = ">= 0.6.0"

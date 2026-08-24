@@ -56,9 +56,6 @@ update-ca-store:
   cmd.run:
     - name: {{ update_cmd }} 2>/dev/null
     - onchanges:
-      {% for cert_name in certs %}
-      - file: {{ cert_name }}-cert
-      {% endfor %}
       {% for url in root_urls %}
       - file: root-remote-{{ loop.index0 }}-cert
       {% endfor %}

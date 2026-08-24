@@ -6,7 +6,8 @@
 # URL:          https://github.com/mpoore/packer
 # ----------------------------------------------------------------------------
 {% set os = grains['os'] %}
-{% set certs = salt['pillar.get']('trustedcertificates', {}) %}
+{% set root_urls = (salt['environ.get']('ROOTPEMFILES', '')).split(',') | map('trim') | select() | list %}
+{% set issuing_urls = (salt['environ.get']('ISSUINGPEMFILES', '')).split(',') | map('trim') | select() | list %}
 
 {% if os in ['RedHat', 'CentOS Stream', 'Rocky'] %}
   {% set cert_dir = '/etc/pki/ca-trust/source/anchors' %}
@@ -29,14 +30,26 @@ certs-dir:
     - group: root
     - mode: 755
 
-{% for cert_name in certs %}
-{{ cert_name }}-cert:
+{% for url in root_urls %}
+root-remote-{{ loop.index0 }}-cert:
   file.managed:
-    - name: {{ cert_dir }}/{{ cert_name }}.crt
+    - name: {{ cert_dir }}/root-remote-{{ loop.index0 }}.crt
+    - source: {{ url }}
+    - skip_verify: True
     - user: root
     - group: root
     - mode: 644
-    - contents_pillar: trustedcertificates:{{ cert_name }}
+{% endfor %}
+
+{% for url in issuing_urls %}
+issuing-remote-{{ loop.index0 }}-cert:
+  file.managed:
+    - name: {{ cert_dir }}/issuing-remote-{{ loop.index0 }}.crt
+    - source: {{ url }}
+    - skip_verify: True
+    - user: root
+    - group: root
+    - mode: 644
 {% endfor %}
 
 update-ca-store:
@@ -45,4 +58,10 @@ update-ca-store:
     - onchanges:
       {% for cert_name in certs %}
       - file: {{ cert_name }}-cert
+      {% endfor %}
+      {% for url in root_urls %}
+      - file: root-remote-{{ loop.index0 }}-cert
+      {% endfor %}
+      {% for url in issuing_urls %}
+      - file: issuing-remote-{{ loop.index0 }}-cert
       {% endfor %}

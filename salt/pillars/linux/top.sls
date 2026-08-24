@@ -7,7 +7,6 @@
 
 base:
   '*':
-    - certificates
     - issue
     - ntp
     - packages

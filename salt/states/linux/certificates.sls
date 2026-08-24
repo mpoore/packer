@@ -36,6 +36,7 @@ root-remote-{{ loop.index0 }}-cert:
     - name: {{ cert_dir }}/root-remote-{{ loop.index0 }}.crt
     - source: {{ url }}
     - skip_verify: True
+    - verify_ssl: False
     - user: root
     - group: root
     - mode: 644
@@ -47,6 +48,7 @@ issuing-remote-{{ loop.index0 }}-cert:
     - name: {{ cert_dir }}/issuing-remote-{{ loop.index0 }}.crt
     - source: {{ url }}
     - skip_verify: True
+    - verify_ssl: False
     - user: root
     - group: root
     - mode: 644

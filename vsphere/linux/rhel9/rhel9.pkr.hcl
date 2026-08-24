@@ -128,7 +128,7 @@ build {
     provisioner "salt" {
         state_tree          = var.state_tree
         pillar_tree         = var.pillar_tree
-        environment_vars    = [ "BUILDVERSION=${ local.build_version }", "BUILDDATE=${ local.build_date }", "BUILDBRANCH=${ var.build_branch }", "RHSM_USER=${ var.rhsm_user }", "RHSM_PASS=${ var.rhsm_pass }" ]
+        environment_vars    = [ "BUILDVERSION=${ local.build_version }", "BUILDDATE=${ local.build_date }", "BUILDBRANCH=${ var.build_branch }", "RHSM_USER=${ var.rhsm_user }", "RHSM_PASS=${ var.rhsm_pass }", "ROOTPEMFILES=${ var.root_pem_files }", "ISSUINGPEMFILES=${ var.issuing_pem_files }" ]
     }
 
     post-processor "manifest" {
